@@ -20,6 +20,7 @@
     "expo": "~55.0.8",
     "expo-clipboard": "^55.0.9",
     "expo-constants": "~55.0.9",
+    "expo-dev-client": "~55.0.18",
     "expo-device": "~55.0.10",
     "expo-font": "~55.0.4",
     "expo-glass-effect": "~55.0.8",

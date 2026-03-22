@@ -13,6 +13,7 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   withTiming,
+  withRepeat,
 } from 'react-native-reanimated';
 
 import { noPalette } from '@/features/no/theme';
@@ -26,6 +27,14 @@ type ActionButtonProps = {
   disabled?: boolean;
   tone: 'primary' | 'secondary';
   hint?: string;
+  loadingPalette?: {
+    backgroundColor: string;
+    borderColor: string;
+    textColor: string;
+    iconTint: string;
+    hintColor: string;
+  };
+  loadingAnimationSpec?: AnimationSpec;
   success?: boolean;
   successLabel?: string;
   successIcon?: SFSymbol;
@@ -40,6 +49,8 @@ export function ActionButton({
   disabled = false,
   tone,
   hint,
+  loadingPalette,
+  loadingAnimationSpec,
   success = false,
   successLabel = 'Copied',
   successIcon = 'checkmark',
@@ -67,36 +78,65 @@ export function ActionButton({
     iconTint: '#ffffff',
     hintColor: 'rgba(255, 255, 255, 0.8)',
   };
-  const palette = success ? successPalette : basePalette;
+  const effectiveLoadingPalette = loadingPalette ?? basePalette;
+  const palette = success ? successPalette : loading ? effectiveLoadingPalette : basePalette;
   const visibleLabel = success ? successLabel : label;
   const visibleIcon = success ? successIcon : icon;
   const hasHint = typeof hint === 'string' && hint.length > 0;
-  const iconStateKey = `${loading ? 'loading' : success ? 'success' : 'idle'}-${visibleIcon ?? 'none'}`;
+  const iconStateKey = visibleIcon ?? 'none';
   const symbolAnimationSpec: AnimationSpec | undefined = loading
-    ? {
-        effect: { type: 'pulse', wholeSymbol: true },
-        repeating: true,
+    ? loadingAnimationSpec ?? {
+        effect: { type: 'bounce', wholeSymbol: true },
       }
     : success
       ? {
           effect: { type: 'scale', wholeSymbol: true },
         }
       : undefined;
-  const successProgress = useDerivedValue(() =>
-    withTiming(success ? 1 : 0, {
-      duration: success ? 180 : 120,
+  const visualStateProgress = useDerivedValue(() =>
+    withTiming(success ? 2 : loading ? 1 : 0, {
+      duration: success ? 180 : loading ? 160 : 120,
       easing: Easing.bezier(0.23, 1, 0.32, 1),
     })
   );
   const animatedButtonStyle = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(successProgress.value, [0, 1], [
+    backgroundColor: interpolateColor(visualStateProgress.value, [0, 1, 2], [
       basePalette.backgroundColor,
+      effectiveLoadingPalette.backgroundColor,
       successPalette.backgroundColor,
     ]),
-    borderColor: interpolateColor(successProgress.value, [0, 1], [
+    borderColor: interpolateColor(visualStateProgress.value, [0, 1, 2], [
       basePalette.borderColor,
+      effectiveLoadingPalette.borderColor,
       successPalette.borderColor,
     ]),
+  }));
+  const loadingSpinProgress = useDerivedValue(() => {
+    if (!loading) {
+      return withTiming(0, {
+        duration: 140,
+        easing: Easing.bezier(0.23, 1, 0.32, 1),
+      });
+    }
+
+    return withRepeat(
+      withTiming(1, {
+        duration: 520,
+        easing: Easing.linear,
+      }),
+      -1,
+      false
+    );
+  });
+  const animatedIconStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        rotate: `${loadingSpinProgress.value * 360}deg`,
+      },
+      {
+        scale: loading ? 0.98 : 1,
+      },
+    ],
   }));
 
   return (
@@ -142,7 +182,8 @@ export function ActionButton({
                 transform: [{ scale: 0.94 }, { translateY: 2 }],
               })}
               exiting={FadeOut.duration(120)}
-              key={iconStateKey}>
+              key={iconStateKey}
+              style={animatedIconStyle}>
               <SymbolView
                 animationSpec={symbolAnimationSpec}
                 name={visibleIcon}
