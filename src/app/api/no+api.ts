@@ -1,5 +1,5 @@
-import { getRandomNoReason } from '@/features/no/catalog';
+import { fetchRemoteNoReason } from '@/features/no/remote-catalog';
 
-export function GET() {
-  return Response.json(getRandomNoReason());
+export async function GET() {
+  return Response.json(await fetchRemoteNoReason());
 }

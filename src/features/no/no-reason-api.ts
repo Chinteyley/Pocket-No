@@ -1,5 +1,5 @@
 import { getRandomNoReason } from './catalog';
-import { NO_REASON_SOURCE, type NoReason } from './contracts';
+import { isNoReasonSource, type NoReason } from './contracts';
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -14,7 +14,7 @@ function isNoReason(value: unknown): value is NoReason {
     typeof value.id === 'string' &&
     typeof value.text === 'string' &&
     typeof value.copiedText === 'string' &&
-    value.source === NO_REASON_SOURCE
+    isNoReasonSource(value.source)
   );
 }
 

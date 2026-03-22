@@ -9,33 +9,14 @@ import { ReasonCard } from '@/components/no/reason-card';
 import {
   copyNoReasonToClipboard,
   createAndCopyNoReason,
-  fetchFreshNoReason,
 } from '@/features/no/no-reason-service';
 import type { NoReason } from '@/features/no/contracts';
 import { noPalette } from '@/features/no/theme';
 
 export default function PocketNoHomeScreen() {
   const [reason, setReason] = React.useState<NoReason | null>(null);
-  const [busyAction, setBusyAction] = React.useState<'copy' | 'another' | 'loading' | null>('loading');
-  const [status, setStatus] = React.useState('Pulling your first clean exit line.');
-
-  const loadInitialReason = React.useEffectEvent(async () => {
-    setBusyAction('loading');
-
-    try {
-      const nextReason = await fetchFreshNoReason();
-      React.startTransition(() => {
-        setReason(nextReason);
-      });
-      setStatus('Fresh no loaded. Copy it or spin another one.');
-    } finally {
-      setBusyAction(null);
-    }
-  });
-
-  React.useEffect(() => {
-    void loadInitialReason();
-  }, [loadInitialReason]);
+  const [busyAction, setBusyAction] = React.useState<'copy' | 'another' | 'loading' | null>(null);
+  const [status, setStatus] = React.useState('Tap Copy No or Another One when you want a fresh line.');
 
   const handleCopy = React.useEffectEvent(async () => {
     setBusyAction('copy');

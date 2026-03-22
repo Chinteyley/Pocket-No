@@ -6,6 +6,7 @@ import { Stack } from 'expo-router/stack';
 import { buildCopyHref } from '@/features/no/deep-links';
 import { ensureNoReasonWidgetSnapshot } from '@/features/no/widget-sync';
 import { noPalette } from '@/features/no/theme';
+import { useMountEffect } from '@/hooks/useMountEffect';
 
 export default function AppLayout() {
   useQuickActionRouting();
@@ -37,9 +38,9 @@ export default function AppLayout() {
     }
   });
 
-  React.useEffect(() => {
+  useMountEffect(() => {
     void prepareNativeSurfaces();
-  }, [prepareNativeSurfaces]);
+  });
 
   return (
     <Stack

@@ -12,6 +12,7 @@ import {
 } from '@/features/no/no-reason-service';
 import { parseNoEntryPoint, type NoEntryPoint, type NoReason } from '@/features/no/contracts';
 import { noPalette } from '@/features/no/theme';
+import { useMountEffect } from '@/hooks/useMountEffect';
 
 const SURFACE_COPY: Record<NoEntryPoint, { eyebrow: string; title: string; detail: string; status: string }> = {
   app: {
@@ -43,6 +44,11 @@ const SURFACE_COPY: Record<NoEntryPoint, { eyebrow: string; title: string; detai
 export default function QuickCopyScreen() {
   const params = useLocalSearchParams<{ entry?: string | string[] }>();
   const entry = parseNoEntryPoint(params.entry);
+
+  return <QuickCopyScreenContent key={entry} entry={entry} />;
+}
+
+function QuickCopyScreenContent({ entry }: { entry: NoEntryPoint }) {
   const [reason, setReason] = React.useState<NoReason | null>(null);
   const [busyAction, setBusyAction] = React.useState<'copy' | 'another' | 'loading' | null>('loading');
   const [status, setStatus] = React.useState('Copying a fresh no.');
@@ -63,9 +69,9 @@ export default function QuickCopyScreen() {
     }
   });
 
-  React.useEffect(() => {
+  useMountEffect(() => {
     void runAutoCopy();
-  }, [runAutoCopy, entry]);
+  });
 
   const handleCopyAgain = React.useEffectEvent(async () => {
     setBusyAction('copy');

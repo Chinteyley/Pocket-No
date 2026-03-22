@@ -53,15 +53,30 @@ const NO_REASON_LINES = [
   'That is a no, but I hope it thrives elsewhere.',
 ];
 
+export function createNoReason({
+  id,
+  text,
+  source = NO_REASON_SOURCE,
+}: {
+  id: string;
+  text: string;
+  source?: NoReason['source'];
+}): NoReason {
+  return {
+    id,
+    text,
+    copiedText: text,
+    source,
+  };
+}
+
 function toNoReason(index: number): NoReason {
   const text = NO_REASON_LINES[index] ?? NO_REASON_LINES[0];
 
-  return {
+  return createNoReason({
     id: `catalog-${index + 1}`,
     text,
-    copiedText: text,
-    source: NO_REASON_SOURCE,
-  };
+  });
 }
 
 export const DEFAULT_NO_REASON = toNoReason(0);
