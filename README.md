@@ -1,56 +1,141 @@
-# Welcome to your Expo app 👋
+# Pocket-No
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Pocket-No is a small Expo app for one job: generate a sharp, funny, low-friction way to say no and copy it immediately.
 
-## Get started
+The app ships the core screen, a quick-copy route, an API-backed reason feed, an iOS widget snapshot, and native shortcuts so the same "give me a no now" action can work from more than one surface.
 
-1. Install dependencies
+## What It Does
 
-   ```bash
-   npm install
-   ```
+- Shows a fresh "no" line on the home screen.
+- Copies the current line to the clipboard.
+- Generates another line without leaving the screen.
+- Supports a dedicated quick-copy flow at `/copy`.
+- Exposes an API route at `/api/no`.
+- Primes and updates an iOS widget snapshot after copies.
+- Registers native quick actions and an App Intent-based shortcut flow on iOS.
 
-2. Start the app
+## Stack
 
-   ```bash
-   npx expo start
-   ```
+- Expo 55
+- Expo Router
+- React 19
+- React Native 0.83
+- TypeScript
+- `expo-quick-actions`
+- `expo-widgets`
+- `@bacons/apple-targets`
+- Reanimated + Skia for visual treatment
 
-In the output, you'll find options to open the app in a
+## Project Shape
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```text
+.
+├── app.json
+├── app.config.ts
+├── reason.json
+├── plugins/
+│   └── with-screenless-quick-copy.js
+├── targets/
+│   └── pocket-no-shortcuts/
+└── src/
+    ├── app/
+    │   ├── _layout.tsx
+    │   ├── api/no+api.ts
+    │   └── (app)/
+    │       ├── _layout.tsx
+    │       ├── copy.tsx
+    │       └── index.tsx
+    ├── components/no/
+    ├── features/no/
+    └── hooks/
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## How It Works
 
-### Other setup steps
+`reason.json` is the source catalog for the larger pool of lines. The API route in `src/app/api/no+api.ts` returns a normalized random entry from that file via `src/features/no/remote-catalog.ts`.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+UI flows call `fetchFreshNoReason()` from `src/features/no/no-reason-service.ts`. If the API fails, the client falls back to a smaller in-app catalog from `src/features/no/catalog.ts`.
 
-## Learn more
+Deep links and native entry points route into the quick-copy screen with an `entry` param so the app can explain whether the copy came from the main app, a quick action, the widget, or the action button shortcut.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Getting Started
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Prerequisites
 
-## Join the community
+- Bun
+- Xcode for iOS native surfaces
+- Android Studio if you want to run Android locally
 
-Join our community of developers creating universal apps.
+### Install
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+bun install
+```
+
+### Run
+
+```bash
+bun run start
+```
+
+Common targets:
+
+```bash
+bun run ios
+bun run android
+bun run web
+```
+
+Lint:
+
+```bash
+bun run lint
+```
+
+## Environment
+
+`app.config.ts` reads `EXPO_PUBLIC_SITE_ORIGIN` and passes it into the Expo Router plugin when present. Set it when you need an explicit site origin for web/server output.
+
+Example:
+
+```bash
+EXPO_PUBLIC_SITE_ORIGIN=https://pocketno.example.com bun run web
+```
+
+## Native Surfaces
+
+This repo includes iOS-specific shortcut and widget work:
+
+- Home screen quick action via `expo-quick-actions`
+- Widget target via `expo-widgets`
+- App Intent target in `targets/pocket-no-shortcuts`
+- Custom config plugin in `plugins/with-screenless-quick-copy.js`
+
+Notes:
+
+- The widget target is configured for iOS 17+.
+- The App Intent shortcut target is configured for iOS 18+.
+- If you change widget or shortcut target wiring, regenerate native iOS artifacts before validating in Xcode.
+
+## Editing The Reason Catalog
+
+Most content changes start in `reason.json`.
+
+Guidelines:
+
+- Keep entries as plain strings.
+- Avoid empty lines.
+- Duplicates are removed during normalization.
+- The client and native shortcut/widget helpers rely on this catalog shape.
+
+## Useful Files
+
+- `src/app/(app)/index.tsx`: main Pocket-No screen
+- `src/app/(app)/copy.tsx`: quick-copy route
+- `src/app/api/no+api.ts`: random reason API
+- `src/features/no/no-reason-service.ts`: clipboard + widget sync orchestration
+- `src/features/no/remote-catalog.ts`: normalized `reason.json` loader
+- `src/features/no/deep-links.ts`: route/scheme helpers
+- `src/features/no/no-reason-widget.tsx`: widget UI
+- `plugins/with-screenless-quick-copy.js`: iOS target/resource wiring
+- `targets/pocket-no-shortcuts/copy-no-action.swift`: App Intent copy implementation
