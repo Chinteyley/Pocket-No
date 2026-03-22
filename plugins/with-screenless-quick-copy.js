@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
+const pbxFile = require('xcode/lib/pbxFile');
 
 const {
-  IOSConfig,
   createRunOncePlugin,
   withDangerousMod,
   withXcodeProject,
@@ -39,6 +39,71 @@ function ensureTargetDeploymentTarget(project, targetName, deploymentTarget) {
   }
 }
 
+/**
+ * Find a target's build phase of a given type by walking its buildPhases array,
+ * bypassing the comment-based lookup in the xcode library which fails when
+ * the phase was created with a non-standard comment (e.g. expo-widgets uses
+ * "Embed Foundation Extensions" instead of "Sources").
+ */
+function findBuildPhase(project, targetUuid, phaseType) {
+  const target = project.pbxNativeTargetSection()[targetUuid];
+  if (!target?.buildPhases) {
+    return null;
+  }
+
+  const section = project.hash.project.objects[phaseType];
+  if (!section) {
+    return null;
+  }
+
+  for (const bp of target.buildPhases) {
+    if (section[bp.value]) {
+      return section[bp.value];
+    }
+  }
+  return null;
+}
+
+/**
+ * Add a file to a specific target's build phase, PBXGroup, and file
+ * reference/build file sections. Bypasses Expo's addBuildSourceFileToGroup /
+ * addResourceFileToGroup which route to the wrong target when the phase was
+ * created with a non-standard comment.
+ */
+function addFileToTarget(project, { filepath, groupName, targetUuid, phaseType, phaseLabel }) {
+  const group = project.pbxGroupByName(groupName);
+  if (!group) {
+    return;
+  }
+
+  const file = new pbxFile(path.basename(filepath));
+
+  // Skip if already in the group
+  if (group.children.some((child) => child.comment === file.basename)) {
+    return;
+  }
+
+  file.uuid = project.generateUuid();
+  file.fileRef = project.generateUuid();
+  file.target = targetUuid;
+
+  project.addToPbxFileReferenceSection(file);
+  project.addToPbxBuildFileSection(file);
+
+  const phase = findBuildPhase(project, targetUuid, phaseType);
+  if (phase) {
+    phase.files.push({
+      value: file.uuid,
+      comment: `${file.basename} in ${phaseLabel}`,
+    });
+  }
+
+  group.children.push({
+    value: file.fileRef,
+    comment: file.basename,
+  });
+}
+
 const withGeneratedScreenlessQuickCopyFiles = (config) =>
   withDangerousMod(config, [
     'ios',
@@ -68,27 +133,26 @@ const withGeneratedScreenlessQuickCopyFiles = (config) =>
 const withWidgetQuickCopyXcode = (config) =>
   withXcodeProject(config, (config) => {
     const project = config.modResults;
-    const widgetTarget = project.pbxTargetByName(WIDGET_TARGET_NAME);
+    const widgetTargetUuid = project.findTargetKey(WIDGET_TARGET_NAME);
 
-    if (!widgetTarget) {
+    if (!widgetTargetUuid) {
       return config;
     }
 
-    IOSConfig.XcodeUtils.addBuildSourceFileToGroup({
-      filepath: `${WIDGET_TARGET_NAME}/${COPY_HELPER_FILENAME}`,
+    addFileToTarget(project, {
+      filepath: COPY_HELPER_FILENAME,
       groupName: WIDGET_TARGET_NAME,
-      project,
-      targetUuid: widgetTarget.uuid,
-      verbose: true,
+      targetUuid: widgetTargetUuid,
+      phaseType: 'PBXSourcesBuildPhase',
+      phaseLabel: 'Sources',
     });
 
-    IOSConfig.XcodeUtils.addResourceFileToGroup({
-      filepath: `${WIDGET_TARGET_NAME}/${REASON_CATALOG_FILENAME}`,
+    addFileToTarget(project, {
+      filepath: REASON_CATALOG_FILENAME,
       groupName: WIDGET_TARGET_NAME,
-      isBuildFile: true,
-      project,
-      targetUuid: widgetTarget.uuid,
-      verbose: true,
+      targetUuid: widgetTargetUuid,
+      phaseType: 'PBXResourcesBuildPhase',
+      phaseLabel: 'Resources',
     });
 
     ensureTargetDeploymentTarget(project, WIDGET_TARGET_NAME, '17.0');

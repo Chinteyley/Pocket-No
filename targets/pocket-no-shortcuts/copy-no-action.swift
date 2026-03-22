@@ -3,7 +3,7 @@ import Foundation
 import UIKit
 import WidgetKit
 
-private struct NoReasonWidgetProps {
+struct NoReasonWidgetProps {
   let text: String
   let kicker: String
   let detail: String
