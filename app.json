@@ -39,7 +39,6 @@
         }
       ],
       "@bacons/apple-targets",
-      "./plugins/with-screenless-quick-copy",
       [
         "expo-widgets",
         {
@@ -58,7 +57,8 @@
             }
           ]
         }
-      ]
+      ],
+      "./plugins/with-screenless-quick-copy"
     ],
     "experiments": {
       "typedRoutes": true,

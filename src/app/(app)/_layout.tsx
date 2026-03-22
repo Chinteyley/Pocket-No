@@ -6,6 +6,10 @@ import { ensureNoReasonWidgetSnapshot } from '@/features/no/widget-sync';
 import { noPalette } from '@/features/no/theme';
 import { useMountEffect } from '@/hooks/useMountEffect';
 
+export const unstable_settings = {
+  initialRouteName: 'index',
+};
+
 export default function AppLayout() {
   const prepareNativeSurfaces = React.useEffectEvent(async () => {
     await ensureNoReasonWidgetSnapshot();
@@ -47,6 +51,17 @@ export default function AppLayout() {
         contentStyle: { backgroundColor: noPalette.paper },
       }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="copy"
+        options={{
+          presentation: 'formSheet',
+          sheetGrabberVisible: true,
+          sheetAllowedDetents: 'fitToContents',
+          headerTransparent: true,
+          headerShown: false,
+          contentStyle: { backgroundColor: 'transparent' },
+        }}
+      />
     </Stack>
   );
 }

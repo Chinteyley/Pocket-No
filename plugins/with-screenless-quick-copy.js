@@ -1,19 +1,23 @@
-const fs = require('fs');
-const path = require('path');
 const pbxFile = require('xcode/lib/pbxFile');
 
 const {
   createRunOncePlugin,
-  withDangerousMod,
   withXcodeProject,
 } = require('expo/config-plugins');
 
 const PLUGIN_NAME = 'with-screenless-quick-copy';
 const WIDGET_TARGET_NAME = 'ExpoWidgetsTarget';
-const SHORTCUTS_TARGET_PATH = path.join('targets', 'pocket-no-shortcuts');
+const MAIN_APP_TARGET_NAME = 'PocketNo';
+const SHORTCUTS_TARGET_NAME = 'PocketNoShortcuts';
+const SHARED_NATIVE_GROUP_NAME = 'PocketNoNative';
+const SHORTCUTS_TARGET_PATH = 'targets/pocket-no-shortcuts';
 const COPY_HELPER_FILENAME = 'copy-no-action.swift';
+const COPY_SHORTCUT_FILENAME = 'CopyNoShortcut.swift';
 const REASON_CATALOG_FILENAME = 'reason.json';
-const CUSTOM_WIDGET_SWIFT_PATH = path.join('plugins', 'ios', 'PocketNoWidget.swift');
+const COPY_HELPER_SOURCE_PATH = `../${SHORTCUTS_TARGET_PATH}/${COPY_HELPER_FILENAME}`;
+const REASON_CATALOG_SOURCE_PATH = `../${REASON_CATALOG_FILENAME}`;
+const COPY_SHORTCUT_SOURCE_PATH = `../plugins/ios/${COPY_SHORTCUT_FILENAME}`;
+const WIDGET_SWIFT_SOURCE_PATH = '../plugins/ios/PocketNoWidget.swift';
 
 function ensureTargetDeploymentTarget(project, targetName, deploymentTarget) {
   const target = project.pbxTargetByName(targetName);
@@ -61,110 +65,202 @@ function findBuildPhase(project, targetUuid, phaseType) {
       return section[bp.value];
     }
   }
+
   return null;
 }
 
-/**
- * Add a file to a specific target's build phase, PBXGroup, and file
- * reference/build file sections. Bypasses Expo's addBuildSourceFileToGroup /
- * addResourceFileToGroup which route to the wrong target when the phase was
- * created with a non-standard comment.
- */
-function addFileToTarget(project, { filepath, groupName, targetUuid, phaseType, phaseLabel }) {
-  const group = project.pbxGroupByName(groupName);
+function ensureBuildPhase(project, targetUuid, phaseType, phaseLabel) {
+  if (findBuildPhase(project, targetUuid, phaseType)) {
+    return;
+  }
+
+  project.addBuildPhase([], phaseType, phaseLabel, targetUuid);
+}
+
+function findGroupKeyByName(project, groupName) {
+  const groups = project.hash.project.objects.PBXGroup ?? {};
+
+  for (const key of Object.keys(groups)) {
+    if (!key.endsWith('_comment')) {
+      continue;
+    }
+
+    if (groups[key] === groupName) {
+      return key.replace(/_comment$/, '');
+    }
+  }
+
+  return null;
+}
+
+function ensureGroup(project, groupName) {
+  const existingGroupKey = findGroupKeyByName(project, groupName);
+  if (existingGroupKey) {
+    return existingGroupKey;
+  }
+
+  const groupKey = project.pbxCreateGroup(groupName);
+  const rootGroupKey = project.getFirstProject().firstProject.mainGroup;
+  project.addToPbxGroup(groupKey, rootGroupKey);
+
+  return groupKey;
+}
+
+function findFileReference(project, filepath) {
+  const fileReferences = project.pbxFileReferenceSection();
+
+  for (const key of Object.keys(fileReferences)) {
+    if (key.endsWith('_comment')) {
+      continue;
+    }
+
+    const fileReference = fileReferences[key];
+    if (fileReference?.path === filepath || fileReference?.path === `"${filepath}"`) {
+      return {
+        basename: fileReferences[`${key}_comment`] ?? fileReference.name ?? filepath.split('/').pop(),
+        fileRef: key,
+      };
+    }
+  }
+
+  return null;
+}
+
+function ensureFileInGroup(project, groupKey, fileReference) {
+  const group = project.getPBXGroupByKey(groupKey);
   if (!group) {
     return;
   }
 
-  const file = new pbxFile(path.basename(filepath));
-
-  // Skip if already in the group
-  if (group.children.some((child) => child.comment === file.basename)) {
+  if (group.children.some((child) => child.value === fileReference.fileRef)) {
     return;
   }
 
-  file.uuid = project.generateUuid();
-  file.fileRef = project.generateUuid();
-  file.target = targetUuid;
+  project.addToPbxGroup(fileReference, groupKey);
+}
 
-  project.addToPbxFileReferenceSection(file);
-  project.addToPbxBuildFileSection(file);
-
-  const phase = findBuildPhase(project, targetUuid, phaseType);
-  if (phase) {
-    phase.files.push({
-      value: file.uuid,
-      comment: `${file.basename} in ${phaseLabel}`,
-    });
+function ensureSharedFileReference(project, { filepath, groupKey }) {
+  const existingFileReference = findFileReference(project, filepath);
+  if (existingFileReference) {
+    ensureFileInGroup(project, groupKey, existingFileReference);
+    return existingFileReference;
   }
 
-  group.children.push({
-    value: file.fileRef,
-    comment: file.basename,
+  const file = new pbxFile(filepath);
+  file.fileRef = project.generateUuid();
+  project.addToPbxFileReferenceSection(file);
+  project.addToPbxGroup(file, groupKey);
+
+  return {
+    basename: file.basename,
+    fileRef: file.fileRef,
+  };
+}
+
+function phaseHasFileReference(project, phase, fileRef) {
+  const buildFiles = project.hash.project.objects.PBXBuildFile ?? {};
+
+  return (phase.files ?? []).some((entry) => {
+    const buildFile = buildFiles[entry.value];
+    return buildFile?.fileRef === fileRef;
   });
 }
 
-const withGeneratedScreenlessQuickCopyFiles = (config) =>
-  withDangerousMod(config, [
-    'ios',
-    async (config) => {
-      const projectRoot = config.modRequest.projectRoot;
-      const iosRoot = config.modRequest.platformProjectRoot;
-      const shortcutsTargetRoot = path.join(projectRoot, SHORTCUTS_TARGET_PATH);
-      const widgetTargetRoot = path.join(iosRoot, WIDGET_TARGET_NAME);
-      const rootReasonCatalogPath = path.join(projectRoot, REASON_CATALOG_FILENAME);
-      const shortcutReasonCatalogPath = path.join(shortcutsTargetRoot, REASON_CATALOG_FILENAME);
-      const widgetReasonCatalogPath = path.join(widgetTargetRoot, REASON_CATALOG_FILENAME);
-      const helperSourcePath = path.join(shortcutsTargetRoot, COPY_HELPER_FILENAME);
-      const widgetHelperPath = path.join(widgetTargetRoot, COPY_HELPER_FILENAME);
-      const widgetSwiftTemplatePath = path.join(projectRoot, CUSTOM_WIDGET_SWIFT_PATH);
-      const widgetSwiftPath = path.join(widgetTargetRoot, 'PocketNoWidget.swift');
+function addFileReferenceToTarget(project, { fileReference, targetUuid, phaseType, phaseLabel }) {
+  ensureBuildPhase(project, targetUuid, phaseType, phaseLabel);
+  const phase = findBuildPhase(project, targetUuid, phaseType);
 
-      fs.mkdirSync(widgetTargetRoot, { recursive: true });
-      fs.copyFileSync(rootReasonCatalogPath, shortcutReasonCatalogPath);
-      fs.copyFileSync(rootReasonCatalogPath, widgetReasonCatalogPath);
-      fs.copyFileSync(helperSourcePath, widgetHelperPath);
-      fs.copyFileSync(widgetSwiftTemplatePath, widgetSwiftPath);
+  if (!phase || phaseHasFileReference(project, phase, fileReference.fileRef)) {
+    return;
+  }
 
-      return config;
-    },
-  ]);
+  const buildFileUuid = project.generateUuid();
+  const comment = `${fileReference.basename} in ${phaseLabel}`;
+  const buildFiles = project.hash.project.objects.PBXBuildFile;
+
+  buildFiles[buildFileUuid] = {
+    isa: 'PBXBuildFile',
+    fileRef: fileReference.fileRef,
+  };
+  buildFiles[`${buildFileUuid}_comment`] = comment;
+
+  phase.files.push({
+    value: buildFileUuid,
+    comment,
+  });
+}
 
 const withWidgetQuickCopyXcode = (config) =>
   withXcodeProject(config, (config) => {
     const project = config.modResults;
+    const sharedGroupKey = ensureGroup(project, SHARED_NATIVE_GROUP_NAME);
+    const copyHelperFile = ensureSharedFileReference(project, {
+      filepath: COPY_HELPER_SOURCE_PATH,
+      groupKey: sharedGroupKey,
+    });
+    const reasonCatalogFile = ensureSharedFileReference(project, {
+      filepath: REASON_CATALOG_SOURCE_PATH,
+      groupKey: sharedGroupKey,
+    });
+    const shortcutSwiftFile = ensureSharedFileReference(project, {
+      filepath: COPY_SHORTCUT_SOURCE_PATH,
+      groupKey: sharedGroupKey,
+    });
+    const widgetSwiftFile = ensureSharedFileReference(project, {
+      filepath: WIDGET_SWIFT_SOURCE_PATH,
+      groupKey: sharedGroupKey,
+    });
     const widgetTargetUuid = project.findTargetKey(WIDGET_TARGET_NAME);
 
-    if (!widgetTargetUuid) {
-      return config;
+    if (widgetTargetUuid) {
+      addFileReferenceToTarget(project, {
+        fileReference: copyHelperFile,
+        targetUuid: widgetTargetUuid,
+        phaseType: 'PBXSourcesBuildPhase',
+        phaseLabel: 'Sources',
+      });
+      addFileReferenceToTarget(project, {
+        fileReference: widgetSwiftFile,
+        targetUuid: widgetTargetUuid,
+        phaseType: 'PBXSourcesBuildPhase',
+        phaseLabel: 'Sources',
+      });
+      addFileReferenceToTarget(project, {
+        fileReference: reasonCatalogFile,
+        targetUuid: widgetTargetUuid,
+        phaseType: 'PBXResourcesBuildPhase',
+        phaseLabel: 'Resources',
+      });
+
+      ensureTargetDeploymentTarget(project, WIDGET_TARGET_NAME, '17.0');
     }
 
-    addFileToTarget(project, {
-      filepath: COPY_HELPER_FILENAME,
-      groupName: WIDGET_TARGET_NAME,
-      targetUuid: widgetTargetUuid,
-      phaseType: 'PBXSourcesBuildPhase',
-      phaseLabel: 'Sources',
-    });
+    const mainAppTargetUuid = project.findTargetKey(MAIN_APP_TARGET_NAME);
 
-    addFileToTarget(project, {
-      filepath: REASON_CATALOG_FILENAME,
-      groupName: WIDGET_TARGET_NAME,
-      targetUuid: widgetTargetUuid,
-      phaseType: 'PBXResourcesBuildPhase',
-      phaseLabel: 'Resources',
-    });
+    if (mainAppTargetUuid) {
+      addFileReferenceToTarget(project, {
+        fileReference: copyHelperFile,
+        targetUuid: mainAppTargetUuid,
+        phaseType: 'PBXSourcesBuildPhase',
+        phaseLabel: 'Sources',
+      });
+      addFileReferenceToTarget(project, {
+        fileReference: shortcutSwiftFile,
+        targetUuid: mainAppTargetUuid,
+        phaseType: 'PBXSourcesBuildPhase',
+        phaseLabel: 'Sources',
+      });
+      addFileReferenceToTarget(project, {
+        fileReference: reasonCatalogFile,
+        targetUuid: mainAppTargetUuid,
+        phaseType: 'PBXResourcesBuildPhase',
+        phaseLabel: 'Resources',
+      });
+    }
 
-    ensureTargetDeploymentTarget(project, WIDGET_TARGET_NAME, '17.0');
-    ensureTargetDeploymentTarget(project, 'PocketNoShortcuts', '18.0');
+    ensureTargetDeploymentTarget(project, SHORTCUTS_TARGET_NAME, '18.0');
 
     return config;
   });
 
-const withScreenlessQuickCopy = (config) => {
-  config = withGeneratedScreenlessQuickCopyFiles(config);
-  config = withWidgetQuickCopyXcode(config);
-  return config;
-};
-
-module.exports = createRunOncePlugin(withScreenlessQuickCopy, PLUGIN_NAME, '1.0.0');
+module.exports = createRunOncePlugin(withWidgetQuickCopyXcode, PLUGIN_NAME, '1.0.0');

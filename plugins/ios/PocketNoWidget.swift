@@ -13,13 +13,11 @@ private struct PocketNoWidgetEntryView: View {
   }
 
   var body: some View {
-    Button(intent: CopyNoIntent()) {
-      content
-    }
-    .buttonStyle(.plain)
-    .containerBackground(for: .widget) {
-      Color(red: 1.0, green: 0.973, blue: 0.937)
-    }
+    content
+      .widgetURL(NoReasonCopySupport.copyRouteURL(entry: "widget"))
+      .containerBackground(for: .widget) {
+        Color(red: 1.0, green: 0.973, blue: 0.937)
+      }
   }
 
   @ViewBuilder
@@ -44,11 +42,6 @@ private struct PocketNoWidgetEntryView: View {
           .foregroundStyle(Color(red: 0.133, green: 0.09, blue: 0.059))
           .lineLimit(isSmall ? 4 : 3)
           .multilineTextAlignment(.leading)
-
-        Text(props.detail)
-          .font(.system(size: 12, weight: .medium))
-          .foregroundStyle(Color(red: 0.522, green: 0.416, blue: 0.345))
-          .lineLimit(2)
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
       .padding(isSmall ? 14 : 18)

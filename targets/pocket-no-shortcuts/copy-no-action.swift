@@ -6,13 +6,11 @@ import WidgetKit
 struct NoReasonWidgetProps {
   let text: String
   let kicker: String
-  let detail: String
 
   var dictionary: [String: Any] {
     [
       "text": text,
       "kicker": kicker,
-      "detail": detail,
     ]
   }
 }
@@ -20,9 +18,10 @@ struct NoReasonWidgetProps {
 enum NoReasonCopySupport {
   static let widgetKind = "PocketNoWidget"
   static let appGroupIdentifier = "group.dev.ctey.pocketno"
+  static let appScheme = "pocketno"
+  static let copyRoutePath = "/copy"
   static let fallbackReason = "In a different season of life, I might say yes\u{2014}but not right now."
-  static let widgetKicker = "Tap to copy a fresh no"
-  static let widgetDetail = "Copies a new line without opening the app."
+  static let widgetKicker = "TAP TO COPY"
 
   private static let reasonCatalogFileName = "reason"
   private static let reasonCatalogFileExtension = "json"
@@ -35,11 +34,25 @@ enum NoReasonCopySupport {
     return copiedText
   }
 
+  static func copyRouteURL(entry: String) -> URL {
+    let queryItems = [
+      URLQueryItem(name: "entry", value: entry),
+      URLQueryItem(
+        name: "launchId",
+        value: String(Int(Date().timeIntervalSince1970 * 1000))
+      ),
+    ]
+    var queryComponents = URLComponents()
+    queryComponents.queryItems = queryItems
+    let query = queryComponents.percentEncodedQuery.map { "?\($0)" } ?? ""
+
+    return URL(string: "\(appScheme)://\(copyRoutePath)\(query)")!
+  }
+
   static func widgetProps(from storedProps: [String: Any]?) -> NoReasonWidgetProps {
     let fallback = NoReasonWidgetProps(
       text: fallbackReason,
-      kicker: widgetKicker,
-      detail: widgetDetail
+      kicker: widgetKicker
     )
 
     guard let storedProps else {
@@ -48,8 +61,7 @@ enum NoReasonCopySupport {
 
     return NoReasonWidgetProps(
       text: storedProps["text"] as? String ?? fallback.text,
-      kicker: storedProps["kicker"] as? String ?? fallback.kicker,
-      detail: storedProps["detail"] as? String ?? fallback.detail
+      kicker: storedProps["kicker"] as? String ?? fallback.kicker
     )
   }
 
@@ -58,16 +70,19 @@ enum NoReasonCopySupport {
       return
     }
 
-    let entry: [String: Any] = [
-      "timestamp": Int(Date().timeIntervalSince1970 * 1000),
-      "props": NoReasonWidgetProps(
-        text: text,
-        kicker: widgetKicker,
-        detail: widgetDetail
-      ).dictionary,
+    let now = Date()
+    let farFuture = Calendar.current.date(byAdding: .year, value: 1, to: now) ?? now
+    let props = NoReasonWidgetProps(
+      text: text,
+      kicker: widgetKicker
+    ).dictionary
+
+    let entries: [[String: Any]] = [
+      ["timestamp": Int(now.timeIntervalSince1970 * 1000), "props": props],
+      ["timestamp": Int(farFuture.timeIntervalSince1970 * 1000), "props": props],
     ]
 
-    defaults.set([entry], forKey: widgetTimelineStorageKey)
+    defaults.set(entries, forKey: widgetTimelineStorageKey)
     WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
   }
 
@@ -122,10 +137,11 @@ struct CopyNoIntent: AppIntent {
   static let title: LocalizedStringResource = "Copy No"
   static let description = IntentDescription("Copy a fresh Pocket-No line without opening the app.")
   static let openAppWhenRun = false
-  static let isDiscoverable = true
+  static let isDiscoverable = false
 
-  func perform() async throws -> some IntentResult {
-    _ = NoReasonCopySupport.copyFreshReason()
-    return .result()
+  @MainActor
+  func perform() async throws -> some IntentResult & ReturnsValue<String> {
+    let text = NoReasonCopySupport.copyFreshReason()
+    return .result(value: text)
   }
 }

@@ -13,7 +13,6 @@ import { createWidget, type WidgetEnvironment } from 'expo-widgets';
 export type PocketNoWidgetProps = {
   text: string;
   kicker: string;
-  detail: string;
 };
 
 const pocketNoWidget = (props: PocketNoWidgetProps, environment: WidgetEnvironment) => {
@@ -57,14 +56,6 @@ const pocketNoWidget = (props: PocketNoWidgetProps, environment: WidgetEnvironme
           multilineTextAlignment('leading'),
         ]}>
         {props.text}
-      </Text>
-      <Text
-        modifiers={[
-          foregroundStyle('#856a58'),
-          font({ size: 12, weight: 'medium' }),
-          lineLimit(2),
-        ]}>
-        {props.detail}
       </Text>
     </VStack>
   );
