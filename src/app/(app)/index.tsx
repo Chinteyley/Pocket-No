@@ -18,7 +18,8 @@ import { noPalette } from '@/features/no/theme';
 import { useMountEffect } from '@/hooks/useMountEffect';
 
 const HOME_REASON_TRANSITION_DELAY_MS = 240;
-const HOME_NEW_BUTTON_PROGRESS_DELAY_MS = 900;
+const HOME_NEW_BUTTON_PROGRESS_DELAY_MS = 450;
+const HOME_COPY_BUTTON_PROGRESS_DELAY_MS = 180;
 
 export default function PocketNoHomeScreen() {
   const insets = useSafeAreaInsets();
@@ -66,6 +67,12 @@ export default function PocketNoHomeScreen() {
     });
   };
 
+  const waitForCopyButtonProgressBeat = async () => {
+    await new Promise((resolve) => {
+      setTimeout(resolve, HOME_COPY_BUTTON_PROGRESS_DELAY_MS);
+    });
+  };
+
   const handleCopy = React.useEffectEvent(async () => {
     if (copyInFlight.current) return;
     copyInFlight.current = true;
@@ -73,14 +80,11 @@ export default function PocketNoHomeScreen() {
     setBusyAction('copy');
     try {
       if (reason) {
-        await copyNoReasonToClipboard(reason);
+        await Promise.all([copyNoReasonToClipboard(reason), waitForCopyButtonProgressBeat()]);
       } else {
-        const nextReason = await fetchFreshNoReason();
+        const [nextReason] = await Promise.all([fetchFreshNoReason(), waitForCopyButtonProgressBeat()]);
         React.startTransition(() => setReason(nextReason));
         await copyNoReasonToClipboard(nextReason);
-      }
-      if (process.env.EXPO_OS === 'ios') {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
       flashCopied();
     } finally {
@@ -198,6 +202,7 @@ export default function PocketNoHomeScreen() {
             icon="doc.on.doc"
             success={showCopySuccess}
             successLabel="Copied!"
+            labelMinWidth={68}
             onPress={() => void handleCopy()}
             loading={busyAction === 'copy'}
             disabled={busyAction !== null || showCopySuccess}

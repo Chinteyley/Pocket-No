@@ -38,6 +38,7 @@ type ActionButtonProps = {
   success?: boolean;
   successLabel?: string;
   successIcon?: SFSymbol;
+  labelMinWidth?: number;
 };
 
 export function ActionButton({
@@ -54,6 +55,7 @@ export function ActionButton({
   success = false,
   successLabel = 'Copied',
   successIcon = 'checkmark',
+  labelMinWidth,
 }: ActionButtonProps) {
   const isPrimary = tone === 'primary';
   const basePalette = isPrimary
@@ -81,13 +83,13 @@ export function ActionButton({
   const effectiveLoadingPalette = loadingPalette ?? basePalette;
   const palette = success ? successPalette : loading ? effectiveLoadingPalette : basePalette;
   const visibleLabel = success ? successLabel : label;
+  const resolvedLabel = loadingLabel && loading ? loadingLabel : visibleLabel;
   const visibleIcon = success ? successIcon : icon;
   const hasHint = typeof hint === 'string' && hint.length > 0;
   const iconStateKey = visibleIcon ?? 'none';
+  const textStateKey = `${success ? 'success' : loading ? 'loading' : 'idle'}:${resolvedLabel}:${hint ?? ''}`;
   const symbolAnimationSpec: AnimationSpec | undefined = loading
-    ? loadingAnimationSpec === null
-      ? undefined
-      : loadingAnimationSpec ?? { effect: { type: 'bounce', wholeSymbol: true } }
+    ? loadingAnimationSpec ?? undefined
     : success
       ? {
           effect: { type: 'scale', wholeSymbol: true },
@@ -113,10 +115,7 @@ export function ActionButton({
   }));
   const loadingSpinProgress = useDerivedValue(() => {
     if (!loading) {
-      return withTiming(0, {
-        duration: 140,
-        easing: Easing.bezier(0.23, 1, 0.32, 1),
-      });
+      return 0;
     }
 
     return withRepeat(
@@ -128,21 +127,29 @@ export function ActionButton({
       false
     );
   });
-  const animatedIconStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        rotate: `${loadingSpinProgress.value * 360}deg`,
-      },
-      {
-        scale: loading ? 0.98 : 1,
-      },
-    ],
-  }));
+  const animatedIconStyle = useAnimatedStyle(() => {
+    if (!loading) {
+      return {
+        transform: [{ rotate: '0deg' }, { scale: 1 }],
+      };
+    }
+
+    return {
+      transform: [
+        {
+          rotate: `${loadingSpinProgress.value * 360}deg`,
+        },
+        {
+          scale: 0.98,
+        },
+      ],
+    };
+  });
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={visibleLabel}
+      accessibilityLabel={resolvedLabel}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => ({
@@ -181,7 +188,6 @@ export function ActionButton({
                 opacity: 0,
                 transform: [{ scale: 0.94 }, { translateY: 2 }],
               })}
-              exiting={FadeOut.duration(120)}
               key={iconStateKey}
               style={animatedIconStyle}>
               <SymbolView
@@ -194,27 +200,45 @@ export function ActionButton({
             </Animated.View>
           </View>
         ) : null}
-        <View style={{ alignItems: 'center', gap: hasHint ? 2 : 0 }}>
-          <Text
+        <View
+          style={{
+            minHeight: hasHint ? 40 : 22,
+            minWidth: labelMinWidth,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Animated.View
+            entering={FadeIn.duration(160).withInitialValues({
+              opacity: 0,
+              transform: [{ scale: 0.98 }, { translateY: 3 }],
+            })}
+            exiting={FadeOut.duration(120)}
+            key={textStateKey}
             style={{
-              fontSize: 16,
-              fontWeight: '700',
-              color: palette.textColor,
-              letterSpacing: -0.2,
+              alignItems: 'center',
+              gap: hasHint ? 2 : 0,
             }}>
-            {loadingLabel && loading ? loadingLabel : visibleLabel}
-          </Text>
-          {hasHint ? (
             <Text
               style={{
-                fontSize: 13,
-                lineHeight: 18,
-                color: palette.hintColor,
-                textAlign: 'center',
+                fontSize: 16,
+                fontWeight: '700',
+                color: palette.textColor,
+                letterSpacing: -0.2,
               }}>
-              {hint}
+              {resolvedLabel}
             </Text>
-          ) : null}
+            {hasHint ? (
+              <Text
+                style={{
+                  fontSize: 13,
+                  lineHeight: 18,
+                  color: palette.hintColor,
+                  textAlign: 'center',
+                }}>
+                {hint}
+              </Text>
+            ) : null}
+          </Animated.View>
         </View>
       </Animated.View>
     </Pressable>

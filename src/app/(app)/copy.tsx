@@ -19,6 +19,7 @@ import { noPalette } from '@/features/no/theme';
 import { useMountEffect } from '@/hooks/useMountEffect';
 
 type CopyFlowState = 'loading' | 'copied' | 'error';
+const COPY_BUTTON_PROGRESS_DELAY_MS = 240;
 
 const sheetTextColors = {
   primary: process.env.EXPO_OS === 'ios' ? PlatformColor('label') : noPalette.ink,
@@ -38,6 +39,12 @@ function CopyScreenContent({
   const [busyAction, setBusyAction] = React.useState<'copy-another' | null>(null);
   const copyInFlight = React.useRef(false);
 
+  const waitForCopyButtonProgressBeat = async () => {
+    await new Promise((resolve) => {
+      setTimeout(resolve, COPY_BUTTON_PROGRESS_DELAY_MS);
+    });
+  };
+
   const runCopyFlow = React.useEffectEvent(async () => {
     if (copyInFlight.current) {
       return;
@@ -47,7 +54,7 @@ function CopyScreenContent({
     setState('loading');
 
     try {
-      const nextReason = await fetchFreshNoReason();
+      const [nextReason] = await Promise.all([fetchFreshNoReason(), waitForCopyButtonProgressBeat()]);
       React.startTransition(() => setReason(nextReason));
       await copyNoReasonToClipboard(nextReason);
       setState('copied');
@@ -67,15 +74,11 @@ function CopyScreenContent({
   });
 
   useMountEffect(() => {
+    console.log('[PocketNo] CopyScreen mounted', { entry, launchId });
     void runCopyFlow();
   });
 
-  const statusLabel =
-    state === 'error'
-      ? 'Could not copy a fresh no'
-      : state === 'loading'
-        ? 'Copying a fresh no...'
-        : null;
+  const statusLabel = state === 'error' ? 'Could not copy a fresh no' : null;
   const displayText =
     state === 'error'
       ? 'Could not load a fresh no right now.'
@@ -101,7 +104,7 @@ function CopyScreenContent({
               fontSize: 13,
               fontWeight: '700',
               letterSpacing: -0.1,
-              color: state === 'error' ? noPalette.accent : sheetTextColors.secondary,
+              color: noPalette.accent,
             }}>
             {statusLabel}
           </Animated.Text>
@@ -126,11 +129,13 @@ function CopyScreenContent({
           marginTop: 6,
           borderRadius: 20,
           borderCurve: 'continuous',
+          width: '100%',
           overflow: 'hidden',
         }}>
         <ActionButton
-          label={state === 'error' ? 'Try again' : 'Copied, Another?'}
-          icon={state === 'error' ? 'arrow.clockwise' : 'doc.on.doc'}
+          label={state === 'error' ? 'Try again' : 'Copy another'}
+          icon="arrow.clockwise"
+          labelMinWidth={108}
           onPress={() => void handleCopyAnother()}
           loading={busyAction === 'copy-another' || state === 'loading'}
           loadingLabel="Copying..."
