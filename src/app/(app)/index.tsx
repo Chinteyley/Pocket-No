@@ -16,7 +16,7 @@ import { noPalette } from '@/features/no/theme';
 import { useMountEffect } from '@/hooks/useMountEffect';
 
 const HOME_REASON_TRANSITION_DELAY_MS = 240;
-const HOME_NEW_BUTTON_PROGRESS_DELAY_MS = 260;
+const HOME_NEW_BUTTON_PROGRESS_DELAY_MS = 180;
 
 export default function PocketNoHomeScreen() {
   const insets = useSafeAreaInsets();
@@ -160,15 +160,14 @@ export default function PocketNoHomeScreen() {
             onPress={() => void handleAnotherOne()}
             loading={busyAction === 'another'}
             loadingPalette={{
-              backgroundColor: noPalette.accentWash,
-              borderColor: 'rgba(232, 108, 47, 0.28)',
-              textColor: noPalette.accent,
+              backgroundColor: '#f9efe8',
+              borderColor: 'rgba(232, 108, 47, 0.18)',
+              textColor: noPalette.ink,
               iconTint: noPalette.accent,
-              hintColor: noPalette.accent,
+              hintColor: noPalette.subtleInk,
             }}
             loadingAnimationSpec={{
-              effect: { type: 'scale', wholeSymbol: true },
-              repeating: true,
+              effect: { type: 'bounce', wholeSymbol: true },
             }}
             disabled={busyAction !== null}
             tone="secondary"
