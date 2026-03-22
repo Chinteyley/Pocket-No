@@ -29,6 +29,8 @@ export default function PocketNoHomeScreen() {
   const [busyAction, setBusyAction] = React.useState<'copy' | 'another' | 'loading' | null>('loading');
   const [showCopySuccess, setShowCopySuccess] = React.useState(false);
   const copySuccessTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copyInFlight = React.useRef(false);
+  const anotherInFlight = React.useRef(false);
 
   const clearCopySuccessTimer = () => {
     if (copySuccessTimeoutRef.current) {
@@ -64,6 +66,8 @@ export default function PocketNoHomeScreen() {
   };
 
   const handleCopy = React.useEffectEvent(async () => {
+    if (copyInFlight.current) return;
+    copyInFlight.current = true;
     hideCopySuccess();
     setBusyAction('copy');
     try {
@@ -80,10 +84,13 @@ export default function PocketNoHomeScreen() {
       flashCopied();
     } finally {
       setBusyAction(null);
+      copyInFlight.current = false;
     }
   });
 
   const handleAnotherOne = React.useEffectEvent(async () => {
+    if (anotherInFlight.current) return;
+    anotherInFlight.current = true;
     hideCopySuccess();
     setBusyAction('another');
     // Matrix floods in to wipe old text
@@ -98,6 +105,7 @@ export default function PocketNoHomeScreen() {
       }
     } finally {
       setBusyAction(null);
+      anotherInFlight.current = false;
     }
   });
 
@@ -130,7 +138,7 @@ export default function PocketNoHomeScreen() {
           reason={reason}
           isLoading={busyAction === 'loading' && reason === null}
           loadingLabel="Loading your next excuse..."
-          copyDisabled={busyAction !== null}
+          copyDisabled={busyAction !== null || showCopySuccess}
           copyState={showCopySuccess ? 'success' : 'idle'}
           onLongPress={reason ? () => void handleCopy() : undefined}
           onTextMeasure={(cy, ry, rx) => {
@@ -168,7 +176,7 @@ export default function PocketNoHomeScreen() {
             successLabel="Copied!"
             onPress={() => void handleCopy()}
             loading={busyAction === 'copy'}
-            disabled={busyAction !== null}
+            disabled={busyAction !== null || showCopySuccess}
             tone="primary"
           />
           <ActionButton

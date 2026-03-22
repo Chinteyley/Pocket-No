@@ -54,6 +54,8 @@ function QuickCopyScreenContent({ entry }: { entry: NoEntryPoint }) {
   const [status, setStatus] = React.useState('Copying a fresh no.');
   const [showCopySuccess, setShowCopySuccess] = React.useState(false);
   const copySuccessTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copyInFlight = React.useRef(false);
+  const anotherInFlight = React.useRef(false);
 
   const copyDetails = SURFACE_COPY[entry];
 
@@ -103,6 +105,8 @@ function QuickCopyScreenContent({ entry }: { entry: NoEntryPoint }) {
   });
 
   const handleCopyAgain = React.useEffectEvent(async () => {
+    if (copyInFlight.current) return;
+    copyInFlight.current = true;
     hideCopySuccess();
     setBusyAction('copy');
 
@@ -122,10 +126,13 @@ function QuickCopyScreenContent({ entry }: { entry: NoEntryPoint }) {
       flashCopied();
     } finally {
       setBusyAction(null);
+      copyInFlight.current = false;
     }
   });
 
   const handleAnotherOne = React.useEffectEvent(async () => {
+    if (anotherInFlight.current) return;
+    anotherInFlight.current = true;
     hideCopySuccess();
     setBusyAction('another');
 
@@ -137,6 +144,7 @@ function QuickCopyScreenContent({ entry }: { entry: NoEntryPoint }) {
       setStatus('Fresh no copied.');
     } finally {
       setBusyAction(null);
+      anotherInFlight.current = false;
     }
   });
 
@@ -217,7 +225,7 @@ function QuickCopyScreenContent({ entry }: { entry: NoEntryPoint }) {
             successLabel="Copied!"
             onPress={() => void handleCopyAgain()}
             loading={busyAction === 'copy'}
-            disabled={busyAction !== null}
+            disabled={busyAction !== null || showCopySuccess}
             tone="secondary"
           />
           <ActionButton
