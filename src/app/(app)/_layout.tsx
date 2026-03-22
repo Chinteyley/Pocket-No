@@ -45,16 +45,13 @@ export default function AppLayout() {
   return (
     <Stack
       screenOptions={{
-        headerLargeTitle: true,
         headerShadowVisible: false,
-        headerLargeTitleShadowVisible: false,
-        headerLargeStyle: { backgroundColor: noPalette.paper },
         headerStyle: { backgroundColor: noPalette.paper },
         headerTintColor: noPalette.ink,
         headerBackButtonDisplayMode: 'minimal',
         contentStyle: { backgroundColor: noPalette.paper },
       }}>
-      <Stack.Screen name="index" options={{ title: 'Pocket-No' }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="copy" options={{ title: 'Quick Copy', headerLargeTitle: false }} />
     </Stack>
   );
