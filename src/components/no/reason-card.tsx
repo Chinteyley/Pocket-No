@@ -1,70 +1,63 @@
+import { Image } from 'expo-image';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  ZoomIn,
+} from 'react-native-reanimated';
 
 import type { NoReason } from '@/features/no/contracts';
 import { noPalette } from '@/features/no/theme';
 
 type ReasonCardProps = {
   reason: NoReason | null;
-  eyebrow: string;
-  footer: string;
+  showCopied: boolean;
 };
 
-export function ReasonCard({ reason, eyebrow, footer }: ReasonCardProps) {
+export function ReasonCard({ reason, showCopied }: ReasonCardProps) {
   return (
     <View
       style={{
-        gap: 16,
-        borderRadius: 30,
-        padding: 22,
-        backgroundColor: noPalette.surface,
-        borderWidth: 1,
-        borderColor: noPalette.outline,
-        boxShadow: `0 22px 48px ${noPalette.shadowSoft}`,
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 32,
+        gap: 20,
       }}>
-      <Text
+      <Animated.Text
+        key={reason?.text ?? 'empty'}
+        entering={FadeIn.duration(400)}
         selectable
         style={{
-          fontSize: 12,
-          fontWeight: '700',
-          letterSpacing: 1.2,
-          textTransform: 'uppercase',
-          color: noPalette.muted,
+          fontSize: reason ? 32 : 24,
+          lineHeight: reason ? 42 : 32,
+          fontWeight: '800',
+          letterSpacing: -1.2,
+          color: reason ? noPalette.ink : noPalette.muted,
+          textAlign: 'center',
         }}>
-        {eyebrow}
-      </Text>
+        {reason?.text ?? '—'}
+      </Animated.Text>
 
-      <Text
-        selectable
-        style={{
-          fontSize: reason ? 30 : 22,
-          lineHeight: reason ? 38 : 30,
-          fontWeight: '900',
-          letterSpacing: -1,
-          color: noPalette.ink,
-        }}>
-        {reason?.text ?? 'Composing a respectable refusal.'}
-      </Text>
-
-      <View
-        style={{
-          borderRadius: 20,
-          paddingHorizontal: 16,
-          paddingVertical: 14,
-          backgroundColor: noPalette.surfaceMuted,
-          borderWidth: 1,
-          borderColor: noPalette.outline,
-        }}>
-        <Text
-          selectable
+      {showCopied && (
+        <Animated.View
+          entering={ZoomIn.springify().damping(14)}
+          exiting={FadeOut.duration(300)}
           style={{
-            fontSize: 14,
-            lineHeight: 21,
-            color: noPalette.subtleInk,
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: noPalette.accent,
+            alignItems: 'center',
+            justifyContent: 'center',
           }}>
-          {footer}
-        </Text>
-      </View>
+          <Image
+            source="sf:checkmark"
+            style={{ width: 18, height: 18, tintColor: '#ffffff' }}
+          />
+        </Animated.View>
+      )}
     </View>
   );
 }

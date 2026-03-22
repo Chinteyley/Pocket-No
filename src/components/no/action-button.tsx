@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import React from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
@@ -5,7 +6,7 @@ import { noPalette } from '@/features/no/theme';
 
 type ActionButtonProps = {
   label: string;
-  hint: string;
+  icon: string;
   onPress: () => void;
   loading?: boolean;
   disabled?: boolean;
@@ -14,76 +15,69 @@ type ActionButtonProps = {
 
 export function ActionButton({
   label,
-  hint,
+  icon,
   onPress,
   loading = false,
   disabled = false,
   tone,
 }: ActionButtonProps) {
-  const palette =
-    tone === 'primary'
-      ? {
-          backgroundColor: noPalette.ink,
-          borderColor: noPalette.ink,
-          textColor: '#fffaf4',
-          hintColor: '#eadfce',
-          spinner: '#fffaf4',
-        }
-      : {
-          backgroundColor: '#fff8ef',
-          borderColor: noPalette.outline,
-          textColor: noPalette.ink,
-          hintColor: noPalette.subtleInk,
-          spinner: noPalette.accent,
-        };
+  const isPrimary = tone === 'primary';
+  const palette = isPrimary
+    ? {
+        backgroundColor: noPalette.ink,
+        borderColor: noPalette.ink,
+        textColor: '#ffffff',
+        iconTint: '#ffffff',
+        spinner: '#ffffff',
+      }
+    : {
+        backgroundColor: noPalette.surfaceMuted,
+        borderColor: noPalette.outline,
+        textColor: noPalette.ink,
+        iconTint: noPalette.ink,
+        spinner: noPalette.accent,
+      };
 
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={label}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => ({
-        borderRadius: 22,
+        flex: 1,
+        borderRadius: 18,
         borderWidth: 1,
         borderColor: palette.borderColor,
         backgroundColor: palette.backgroundColor,
-        opacity: disabled ? 0.72 : 1,
-        transform: [{ scale: pressed && !disabled ? 0.985 : 1 }],
-        boxShadow: `0 16px 34px ${tone === 'primary' ? noPalette.shadowStrong : noPalette.shadowSoft}`,
+        opacity: disabled ? 0.6 : 1,
+        transform: [{ scale: pressed && !disabled ? 0.97 : 1 }],
       })}>
       <View
         style={{
-          minHeight: 74,
-          paddingHorizontal: 18,
-          paddingVertical: 16,
-          flexDirection: 'row',
+          height: 56,
           alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 16,
+          justifyContent: 'center',
+          flexDirection: 'row',
+          gap: 8,
         }}>
-        <View style={{ flex: 1, gap: 4 }}>
-          <Text
-            selectable
-            style={{
-              fontSize: 18,
-              fontWeight: '800',
-              color: palette.textColor,
-              letterSpacing: -0.3,
-            }}>
-            {label}
-          </Text>
-          <Text
-            selectable
-            style={{
-              fontSize: 13,
-              lineHeight: 18,
-              color: palette.hintColor,
-            }}>
-            {hint}
-          </Text>
-        </View>
-
-        {loading ? <ActivityIndicator color={palette.spinner} /> : null}
+        {loading ? (
+          <ActivityIndicator color={palette.spinner} size="small" />
+        ) : (
+          <Image
+            source={`sf:${icon}`}
+            style={{ width: 18, height: 18, tintColor: palette.iconTint }}
+          />
+        )}
+        <Text
+          style={{
+            fontSize: 16,
+            fontWeight: '600',
+            color: palette.textColor,
+            letterSpacing: -0.2,
+          }}>
+          {label}
+        </Text>
       </View>
     </Pressable>
   );
