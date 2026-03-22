@@ -7,19 +7,14 @@ import {
   lineLimit,
   multilineTextAlignment,
   padding,
-  widgetURL,
 } from '@expo/ui/swift-ui/modifiers';
 import { createWidget, type WidgetEnvironment } from 'expo-widgets';
-
-import { buildCopySchemeUrl } from './deep-links';
 
 export type PocketNoWidgetProps = {
   text: string;
   kicker: string;
   detail: string;
 };
-
-const widgetUrl = buildCopySchemeUrl('widget');
 
 const pocketNoWidget = (props: PocketNoWidgetProps, environment: WidgetEnvironment) => {
   'widget';
@@ -31,7 +26,6 @@ const pocketNoWidget = (props: PocketNoWidgetProps, environment: WidgetEnvironme
           foregroundStyle('#e86c2f'),
           font({ weight: 'semibold' }),
           lineLimit(1),
-          widgetURL(widgetUrl),
         ]}>
         No: {props.text}
       </Text>
@@ -46,7 +40,6 @@ const pocketNoWidget = (props: PocketNoWidgetProps, environment: WidgetEnvironme
         padding({ all: isSmall ? 14 : 18 }),
         background('#fff8ef'),
         cornerRadius(24),
-        widgetURL(widgetUrl),
       ]}>
       <Text
         modifiers={[

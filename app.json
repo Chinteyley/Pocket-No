@@ -39,6 +39,7 @@
         }
       ],
       "@bacons/apple-targets",
+      "./plugins/with-screenless-quick-copy",
       [
         "expo-widgets",
         {

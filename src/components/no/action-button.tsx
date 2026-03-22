@@ -34,7 +34,7 @@ type ActionButtonProps = {
     iconTint: string;
     hintColor: string;
   };
-  loadingAnimationSpec?: AnimationSpec;
+  loadingAnimationSpec?: AnimationSpec | null;
   success?: boolean;
   successLabel?: string;
   successIcon?: SFSymbol;
@@ -85,9 +85,9 @@ export function ActionButton({
   const hasHint = typeof hint === 'string' && hint.length > 0;
   const iconStateKey = visibleIcon ?? 'none';
   const symbolAnimationSpec: AnimationSpec | undefined = loading
-    ? loadingAnimationSpec ?? {
-        effect: { type: 'bounce', wholeSymbol: true },
-      }
+    ? loadingAnimationSpec === null
+      ? undefined
+      : loadingAnimationSpec ?? { effect: { type: 'bounce', wholeSymbol: true } }
     : success
       ? {
           effect: { type: 'scale', wholeSymbol: true },

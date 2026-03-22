@@ -2,6 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { Stack } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
+import { useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActionButton } from '@/components/no/action-button';
@@ -16,10 +17,14 @@ import { noPalette } from '@/features/no/theme';
 import { useMountEffect } from '@/hooks/useMountEffect';
 
 const HOME_REASON_TRANSITION_DELAY_MS = 240;
-const HOME_NEW_BUTTON_PROGRESS_DELAY_MS = 180;
+const HOME_NEW_BUTTON_PROGRESS_DELAY_MS = 900;
 
 export default function PocketNoHomeScreen() {
   const insets = useSafeAreaInsets();
+  const textCy   = useSharedValue(0.44);
+  const textRy   = useSharedValue(0.10);
+  const textRx   = useSharedValue(0.42);
+  const textFill = useSharedValue(0);
   const [reason, setReason] = React.useState<NoReason | null>(null);
   const [busyAction, setBusyAction] = React.useState<'copy' | 'another' | 'loading' | null>('loading');
   const [showCopySuccess, setShowCopySuccess] = React.useState(false);
@@ -81,9 +86,13 @@ export default function PocketNoHomeScreen() {
   const handleAnotherOne = React.useEffectEvent(async () => {
     hideCopySuccess();
     setBusyAction('another');
+    // Matrix floods in to wipe old text
+    textFill.value = withTiming(1, { duration: 380 });
     try {
       const [nextReason] = await Promise.all([fetchFreshNoReason(), waitForButtonProgressBeat()]);
       React.startTransition(() => setReason(nextReason));
+      // Matrix retreats to reveal new text
+      textFill.value = withTiming(0, { duration: 420 });
       if (process.env.EXPO_OS === 'ios') {
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       }
@@ -115,16 +124,24 @@ export default function PocketNoHomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: noPalette.paper }}>
       <Stack.Screen options={{ headerShown: false }} />
-      <AmbientBackground />
 
       <View style={{ flex: 1, paddingTop: insets.top }}>
         <ReasonCard
           reason={reason}
           isLoading={busyAction === 'loading' && reason === null}
           loadingLabel="Loading your next excuse..."
-          onLongPress={busyAction === null && reason ? () => void handleCopy() : undefined}
+          copyDisabled={busyAction !== null}
+          copyState={showCopySuccess ? 'success' : 'idle'}
+          onLongPress={reason ? () => void handleCopy() : undefined}
+          onTextMeasure={(cy, ry, rx) => {
+            textCy.value = withSpring(cy, { damping: 18, stiffness: 80 });
+            textRy.value = withSpring(ry, { damping: 18, stiffness: 80 });
+            textRx.value = withSpring(rx, { damping: 18, stiffness: 80 });
+          }}
         />
       </View>
+
+      <AmbientBackground textCy={textCy} textRy={textRy} textRx={textRx} textFill={textFill} />
 
       <View
         style={{
@@ -148,7 +165,7 @@ export default function PocketNoHomeScreen() {
             label="Copy"
             icon="doc.on.doc"
             success={showCopySuccess}
-            successLabel="Copy"
+            successLabel="Copied!"
             onPress={() => void handleCopy()}
             loading={busyAction === 'copy'}
             disabled={busyAction !== null}
@@ -166,9 +183,7 @@ export default function PocketNoHomeScreen() {
               iconTint: noPalette.accent,
               hintColor: noPalette.subtleInk,
             }}
-            loadingAnimationSpec={{
-              effect: { type: 'bounce', wholeSymbol: true },
-            }}
+            loadingAnimationSpec={null}
             disabled={busyAction !== null}
             tone="secondary"
           />

@@ -5,8 +5,8 @@ import type { PocketNoWidgetProps } from './no-reason-widget';
 function toWidgetProps(reason: NoReason): PocketNoWidgetProps {
   return {
     text: reason.text,
-    kicker: 'Tap for a fresh no',
-    detail: 'Opens the app and copies another one fast.',
+    kicker: 'Tap to copy a fresh no',
+    detail: 'Copies a new line without opening the app.',
   };
 }
 
