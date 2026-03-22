@@ -13,10 +13,16 @@ const SHARED_NATIVE_GROUP_NAME = 'PocketNoNative';
 const SHORTCUTS_TARGET_PATH = 'targets/pocket-no-shortcuts';
 const COPY_HELPER_FILENAME = 'copy-no-action.swift';
 const COPY_SHORTCUT_FILENAME = 'CopyNoShortcut.swift';
+const OPEN_COPY_SHEET_INTENT_FILENAME = 'OpenCopySheetIntent.swift';
+const OPEN_COPY_SHEET_INTENT_APP_FILENAME = 'OpenCopySheetIntent+App.swift';
+const OPEN_COPY_SHEET_INTENT_WIDGET_FILENAME = 'OpenCopySheetIntent+Widget.swift';
 const REASON_CATALOG_FILENAME = 'reason.json';
 const COPY_HELPER_SOURCE_PATH = `../${SHORTCUTS_TARGET_PATH}/${COPY_HELPER_FILENAME}`;
 const REASON_CATALOG_SOURCE_PATH = `../${REASON_CATALOG_FILENAME}`;
 const COPY_SHORTCUT_SOURCE_PATH = `../plugins/ios/${COPY_SHORTCUT_FILENAME}`;
+const OPEN_COPY_SHEET_INTENT_SOURCE_PATH = `../plugins/ios/${OPEN_COPY_SHEET_INTENT_FILENAME}`;
+const OPEN_COPY_SHEET_INTENT_APP_SOURCE_PATH = `../plugins/ios/${OPEN_COPY_SHEET_INTENT_APP_FILENAME}`;
+const OPEN_COPY_SHEET_INTENT_WIDGET_SOURCE_PATH = `../plugins/ios/${OPEN_COPY_SHEET_INTENT_WIDGET_FILENAME}`;
 const WIDGET_SWIFT_SOURCE_PATH = '../plugins/ios/PocketNoWidget.swift';
 
 function ensureTargetDeploymentTarget(project, targetName, deploymentTarget) {
@@ -206,6 +212,18 @@ const withWidgetQuickCopyXcode = (config) =>
       filepath: COPY_SHORTCUT_SOURCE_PATH,
       groupKey: sharedGroupKey,
     });
+    const openCopySheetIntentFile = ensureSharedFileReference(project, {
+      filepath: OPEN_COPY_SHEET_INTENT_SOURCE_PATH,
+      groupKey: sharedGroupKey,
+    });
+    const openCopySheetIntentAppFile = ensureSharedFileReference(project, {
+      filepath: OPEN_COPY_SHEET_INTENT_APP_SOURCE_PATH,
+      groupKey: sharedGroupKey,
+    });
+    const openCopySheetIntentWidgetFile = ensureSharedFileReference(project, {
+      filepath: OPEN_COPY_SHEET_INTENT_WIDGET_SOURCE_PATH,
+      groupKey: sharedGroupKey,
+    });
     const widgetSwiftFile = ensureSharedFileReference(project, {
       filepath: WIDGET_SWIFT_SOURCE_PATH,
       groupKey: sharedGroupKey,
@@ -221,6 +239,18 @@ const withWidgetQuickCopyXcode = (config) =>
       });
       addFileReferenceToTarget(project, {
         fileReference: widgetSwiftFile,
+        targetUuid: widgetTargetUuid,
+        phaseType: 'PBXSourcesBuildPhase',
+        phaseLabel: 'Sources',
+      });
+      addFileReferenceToTarget(project, {
+        fileReference: openCopySheetIntentFile,
+        targetUuid: widgetTargetUuid,
+        phaseType: 'PBXSourcesBuildPhase',
+        phaseLabel: 'Sources',
+      });
+      addFileReferenceToTarget(project, {
+        fileReference: openCopySheetIntentWidgetFile,
         targetUuid: widgetTargetUuid,
         phaseType: 'PBXSourcesBuildPhase',
         phaseLabel: 'Sources',
@@ -246,6 +276,18 @@ const withWidgetQuickCopyXcode = (config) =>
       });
       addFileReferenceToTarget(project, {
         fileReference: shortcutSwiftFile,
+        targetUuid: mainAppTargetUuid,
+        phaseType: 'PBXSourcesBuildPhase',
+        phaseLabel: 'Sources',
+      });
+      addFileReferenceToTarget(project, {
+        fileReference: openCopySheetIntentFile,
+        targetUuid: mainAppTargetUuid,
+        phaseType: 'PBXSourcesBuildPhase',
+        phaseLabel: 'Sources',
+      });
+      addFileReferenceToTarget(project, {
+        fileReference: openCopySheetIntentAppFile,
         targetUuid: mainAppTargetUuid,
         phaseType: 'PBXSourcesBuildPhase',
         phaseLabel: 'Sources',

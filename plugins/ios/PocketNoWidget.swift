@@ -13,11 +13,23 @@ private struct PocketNoWidgetEntryView: View {
   }
 
   var body: some View {
-    content
-      .widgetURL(NoReasonCopySupport.copyRouteURL(entry: "widget"))
+    tapTarget
       .containerBackground(for: .widget) {
         Color(red: 1.0, green: 0.973, blue: 0.937)
       }
+  }
+
+  @ViewBuilder
+  private var tapTarget: some View {
+    if widgetFamily == .accessoryInline {
+      content
+        .widgetURL(NoReasonCopySupport.copyRouteURL(entry: "widget"))
+    } else {
+      Button(intent: OpenCopySheetIntent()) {
+        content
+      }
+      .buttonStyle(.plain)
+    }
   }
 
   @ViewBuilder
