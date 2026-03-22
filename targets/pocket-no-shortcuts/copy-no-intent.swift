@@ -4,7 +4,7 @@ import Foundation
 @main
 struct PocketNoShortcutsExtension: AppIntentsExtension {}
 
-@available(iOS 17.0, *)
+@available(iOS 18.0, *)
 struct CopyNoIntent: AppIntent {
   static let title: LocalizedStringResource = "Copy No"
   static let description = IntentDescription("Open Pocket-No and copy a fresh reason.")
@@ -21,20 +21,18 @@ struct CopyNoIntent: AppIntent {
   }
 }
 
-@available(iOS 17.0, *)
+@available(iOS 18.0, *)
 struct PocketNoAppShortcuts: AppShortcutsProvider {
   static var appShortcuts: [AppShortcut] {
-    [
-      AppShortcut(
-        intent: CopyNoIntent(),
-        phrases: [
-          "Copy a no in \\(.applicationName)",
-          "Get a no from \\(.applicationName)",
-          "Open quick copy in \\(.applicationName)",
-        ],
-        shortTitle: "Copy No",
-        systemImageName: "hand.raised.fill"
-      ),
-    ]
+    AppShortcut(
+      intent: CopyNoIntent(),
+      phrases: [
+        "Copy a no in \(.applicationName)",
+        "Get a no from \(.applicationName)",
+        "Open quick copy in \(.applicationName)",
+      ],
+      shortTitle: "Copy No",
+      systemImageName: "hand.raised.fill"
+    )
   }
 }

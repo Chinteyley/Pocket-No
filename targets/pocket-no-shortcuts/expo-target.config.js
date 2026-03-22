@@ -4,5 +4,5 @@ module.exports = {
   name: 'PocketNoShortcuts',
   displayName: 'Pocket-No Shortcuts',
   bundleIdentifier: '.shortcuts',
-  deploymentTarget: '16.2',
+  deploymentTarget: '18.0',
 };
