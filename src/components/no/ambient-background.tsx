@@ -62,13 +62,22 @@ half4 main(float2 xy) {
 `;
 
 type Props = {
-  textCy: SharedValue<number>;
-  textRy: SharedValue<number>;
-  textRx: SharedValue<number>;
-  textFill: SharedValue<number>;
+  textCy?: SharedValue<number>;
+  textRy?: SharedValue<number>;
+  textRx?: SharedValue<number>;
+  textFill?: SharedValue<number>;
 };
 
 export function AmbientBackground({ textCy, textRy, textRx, textFill }: Props) {
+  const defaultCy = useSharedValue(0);
+  const defaultRy = useSharedValue(0);
+  const defaultRx = useSharedValue(0);
+  const defaultFill = useSharedValue(1);
+
+  const cy = textCy ?? defaultCy;
+  const ry = textRy ?? defaultRy;
+  const rx = textRx ?? defaultRx;
+  const fill = textFill ?? defaultFill;
   const { width, height } = useWindowDimensions();
   const clock = useSharedValue(0);
 
@@ -81,10 +90,10 @@ export function AmbientBackground({ textCy, textRy, textRx, textFill }: Props) {
   const uniforms = useDerivedValue(() => ({
     u_resolution: [width, height] as [number, number],
     u_time:    clock.value,
-    u_text_cy: textCy.value,
-    u_text_ry: textRy.value,
-    u_text_rx: textRx.value,
-    u_fill:    textFill.value,
+    u_text_cy: cy.value,
+    u_text_ry: ry.value,
+    u_text_rx: rx.value,
+    u_fill:    fill.value,
   }));
 
   if (!effect) return null;

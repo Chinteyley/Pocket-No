@@ -1,16 +1,12 @@
 import * as QuickActions from 'expo-quick-actions';
-import { useQuickActionRouting } from 'expo-quick-actions/router';
 import React from 'react';
 import { Stack } from 'expo-router/stack';
 
-import { buildCopyHref } from '@/features/no/deep-links';
 import { ensureNoReasonWidgetSnapshot } from '@/features/no/widget-sync';
 import { noPalette } from '@/features/no/theme';
 import { useMountEffect } from '@/hooks/useMountEffect';
 
 export default function AppLayout() {
-  useQuickActionRouting();
-
   const prepareNativeSurfaces = React.useEffectEvent(async () => {
     await ensureNoReasonWidgetSnapshot();
 
@@ -30,7 +26,6 @@ export default function AppLayout() {
           title: 'Random No',
           subtitle: 'Copy one fast',
           icon: 'prohibit',
-          params: { href: buildCopyHref('quick-action') },
         },
       ]);
     } catch (error) {
@@ -52,7 +47,6 @@ export default function AppLayout() {
         contentStyle: { backgroundColor: noPalette.paper },
       }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="copy" options={{ title: 'Quick Copy', headerLargeTitle: false }} />
     </Stack>
   );
 }

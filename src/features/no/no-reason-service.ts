@@ -27,12 +27,6 @@ export async function fetchFreshNoReason() {
   return fetchFreshNoReasonFromApi();
 }
 
-export async function createAndCopyNoReason() {
-  const reason = await fetchFreshNoReason();
-  await copyReason(reason);
-  return reason;
-}
-
 export async function copyNoReasonToClipboard(reason: NoReason) {
   await copyReason(reason);
 }

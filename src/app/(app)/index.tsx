@@ -1,4 +1,5 @@
 import * as Haptics from 'expo-haptics';
+import * as QuickActions from 'expo-quick-actions';
 import { Stack } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
@@ -121,11 +122,34 @@ export default function PocketNoHomeScreen() {
     }
   });
 
+  const handleQuickCopy = React.useEffectEvent(async () => {
+    hideCopySuccess();
+    setBusyAction('another');
+    textFill.value = withTiming(1, { duration: 380 });
+
+    try {
+      const nextReason = await fetchFreshNoReason();
+      React.startTransition(() => setReason(nextReason));
+      textFill.value = withTiming(0, { duration: 420 });
+      await copyNoReasonToClipboard(nextReason);
+      flashCopied();
+    } finally {
+      setBusyAction(null);
+    }
+  });
+
   useMountEffect(() => {
     void loadInitialReason();
 
+    const subscription = QuickActions.addListener((action) => {
+      if (action.id === 'random-no') {
+        void handleQuickCopy();
+      }
+    });
+
     return () => {
       clearCopySuccessTimer();
+      subscription.remove();
     };
   });
 
