@@ -37,7 +37,9 @@ function CopyScreenContent({
   const [reason, setReason] = React.useState<NoReason | null>(null);
   const [state, setState] = React.useState<CopyFlowState>('loading');
   const [busyAction, setBusyAction] = React.useState<'copy-another' | null>(null);
+  const [settling, setSettling] = React.useState(false);
   const copyInFlight = React.useRef(false);
+  const settleTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const waitForCopyButtonProgressBeat = async () => {
     await new Promise((resolve) => {
@@ -65,16 +67,29 @@ function CopyScreenContent({
     } finally {
       copyInFlight.current = false;
       setBusyAction(null);
+      setSettling(true);
+      settleTimerRef.current = setTimeout(() => {
+        settleTimerRef.current = null;
+        setSettling(false);
+      }, 800);
     }
   });
 
   const handleCopyAnother = React.useEffectEvent(async () => {
+    if (settleTimerRef.current) {
+      clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
+    setSettling(false);
     setBusyAction('copy-another');
     await runCopyFlow();
   });
 
   useMountEffect(() => {
     void runCopyFlow();
+    return () => {
+      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    };
   });
 
   const statusLabel = state === 'error' ? 'Could not copy a fresh no' : null;
@@ -136,9 +151,10 @@ function CopyScreenContent({
           icon="arrow.clockwise"
           labelMinWidth={108}
           onPress={() => void handleCopyAnother()}
-          loading={busyAction === 'copy-another' || state === 'loading'}
+          loading={busyAction === 'copy-another' || state === 'loading' || settling}
           loadingLabel="Copying..."
-          disabled={busyAction !== null || state === 'loading'}
+          loadingIconMotion="rotate-settle"
+          disabled={busyAction !== null || state === 'loading' || settling}
           tone="primary"
         />
       </View>
