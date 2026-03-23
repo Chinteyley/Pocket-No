@@ -3,6 +3,10 @@ import type { ExpoConfig } from 'expo/config';
 const appJson = require('./app.json') as { expo: ExpoConfig };
 type ExpoPlugin = string | [string] | [string, Record<string, unknown>];
 
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
 export default (): ExpoConfig => {
   const origin = process.env.EXPO_PUBLIC_SITE_ORIGIN?.trim();
   const plugins = ((appJson.expo.plugins ?? []) as ExpoPlugin[]).map<ExpoPlugin>((plugin) => {
@@ -21,12 +25,13 @@ export default (): ExpoConfig => {
 
     return plugin;
   });
+  const extra = isObjectRecord(appJson.expo.extra) ? appJson.expo.extra : {};
 
   return {
     ...appJson.expo,
     plugins,
     extra: {
-      ...((appJson.expo as Record<string, unknown>).extra as Record<string, unknown>),
+      ...extra,
       eas: {
         projectId: '54bf3270-0da2-4c1d-87ec-a2c3a7378e2b',
       },

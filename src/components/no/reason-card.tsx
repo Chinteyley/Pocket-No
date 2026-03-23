@@ -5,9 +5,10 @@ import Animated, {
   FadeIn,
   FadeOut,
 } from 'react-native-reanimated';
+import { useCSSVariable } from 'uniwind';
 
+import { cn } from '@/lib/cn';
 import type { NoReason } from '@/features/no/contracts';
-import { noPalette } from '@/features/no/theme';
 
 type ReasonCardProps = {
   reason: NoReason | null;
@@ -34,6 +35,7 @@ export function ReasonCard({
 }: ReasonCardProps) {
   const textContainerRef = useRef<View>(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const accentColor = useCSSVariable('--color-accent') as string;
 
   const handleLayout = useCallback(() => {
     textContainerRef.current?.measure((_x, _y, w, h, _pageX, pageY) => {
@@ -56,31 +58,15 @@ export function ReasonCard({
           key: 'success',
           label: 'Copied to clipboard',
           icon: 'checkmark' as SFSymbol,
-          backgroundColor: noPalette.accentWash,
-          borderColor: 'rgba(232, 108, 47, 0.18)',
-          color: noPalette.accent,
         }
       : null;
 
   return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 32,
-        gap: 16,
-      }}>
+    <View className="flex-1 items-center justify-center px-8 gap-4">
       {eyebrow ? (
         <Text
           selectable
-          style={{
-            fontSize: 12,
-            fontWeight: '700',
-            letterSpacing: 1,
-            textTransform: 'uppercase',
-            color: noPalette.muted,
-          }}>
+          className="text-xs font-bold tracking-[1px] uppercase text-muted">
           {eyebrow}
         </Text>
       ) : null}
@@ -88,11 +74,7 @@ export function ReasonCard({
       <View
         ref={textContainerRef}
         onLayout={handleLayout}
-        style={{
-          position: 'relative',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
+        className="relative items-center justify-center">
         {copyIndicator ? (
           <Animated.View
             key={copyIndicator.key}
@@ -102,34 +84,15 @@ export function ReasonCard({
             })}
             exiting={FadeOut.duration(140)}
             pointerEvents="none"
-            style={{
-              position: 'absolute',
-              bottom: '100%',
-              marginBottom: 14,
-              zIndex: 1,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
-              borderRadius: 999,
-              paddingHorizontal: 14,
-              paddingVertical: 8,
-              backgroundColor: copyIndicator.backgroundColor,
-              borderWidth: 1,
-              borderColor: copyIndicator.borderColor,
-            }}>
+            className="absolute bottom-full mb-3.5 z-10 flex-row items-center gap-2 rounded-full px-3.5 py-2 bg-accent-wash border border-accent/[0.18]">
             <SymbolView
               name={copyIndicator.icon}
               size={14}
-              tintColor={copyIndicator.color}
+              tintColor={accentColor}
               weight="semibold"
             />
             <Text
-              style={{
-                fontSize: 13,
-                fontWeight: '700',
-                letterSpacing: -0.1,
-                color: copyIndicator.color,
-              }}>
+              className="text-[13px] font-bold tracking-[-0.1px] text-accent">
               {copyIndicator.label}
             </Text>
           </Animated.View>
@@ -155,15 +118,12 @@ export function ReasonCard({
             key={reason?.id ?? (isLoading ? 'loading' : 'empty')}
             entering={FadeIn.duration(180)}
             selectable={!canCopyFromCard}
-            style={{
-              fontSize: isPlaceholder ? 24 : 32,
-              lineHeight: isPlaceholder ? 32 : 42,
-              fontWeight: isPlaceholder ? '700' : '800',
-              letterSpacing: isPlaceholder ? -0.6 : -1.2,
-              color: isPlaceholder ? noPalette.subtleInk : noPalette.ink,
-              textAlign: 'center',
-              maxWidth: 420,
-            }}>
+            className={cn(
+              'text-center max-w-[420px]',
+              isPlaceholder
+                ? 'text-2xl leading-8 font-bold tracking-[-0.6px] text-subtle-ink'
+                : 'text-[32px] leading-[42px] font-extrabold tracking-[-1.2px] text-ink'
+            )}>
             {displayText}
           </Animated.Text>
         </Pressable>
@@ -172,17 +132,10 @@ export function ReasonCard({
       {footer ? (
         <Animated.View
           entering={FadeIn.delay(60).duration(220)}
-          style={{
-            maxWidth: 360,
-          }}>
+          className="max-w-[360px]">
           <Text
             selectable
-            style={{
-              fontSize: 14,
-              lineHeight: 21,
-              color: noPalette.subtleInk,
-              textAlign: 'center',
-            }}>
+            className="text-sm leading-[21px] text-subtle-ink text-center">
             {footer}
           </Text>
         </Animated.View>

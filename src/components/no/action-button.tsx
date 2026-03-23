@@ -6,6 +6,7 @@ import {
 import { Image } from 'expo-image';
 import React from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
+import { cn } from '@/lib/cn';
 import Animated, {
   Easing,
   FadeIn,
@@ -15,14 +16,15 @@ import Animated, {
   useDerivedValue,
   withTiming,
 } from 'react-native-reanimated';
-
-import { noPalette } from '@/features/no/theme';
+import { useCSSVariable } from 'uniwind';
 
 type ActionButtonProps = {
   label: string;
   icon?: SFSymbol;
   onPress: () => void;
+  fill?: boolean;
   loading?: boolean;
+  loadingIcon?: SFSymbol;
   loadingLabel?: string;
   disabled?: boolean;
   tone: 'primary' | 'secondary';
@@ -46,7 +48,9 @@ export function ActionButton({
   label,
   icon,
   onPress,
+  fill = false,
   loading = false,
+  loadingIcon,
   loadingLabel,
   disabled = false,
   tone,
@@ -60,24 +64,31 @@ export function ActionButton({
   labelMinWidth,
 }: ActionButtonProps) {
   const isPrimary = tone === 'primary';
+  const accentColor = useCSSVariable('--color-accent') as string;
+  const buttonPrimaryColor = useCSSVariable('--color-button-primary') as string;
+  const buttonPrimaryTextColor = useCSSVariable('--color-button-primary-text') as string;
+  const buttonSecondaryColor = useCSSVariable('--color-button-secondary') as string;
+  const buttonSecondaryTextColor = useCSSVariable('--color-button-secondary-text') as string;
+  const buttonSecondaryBorderColor = useCSSVariable('--color-button-secondary-border') as string;
+
   const basePalette = isPrimary
     ? {
-        backgroundColor: noPalette.ink,
-        borderColor: noPalette.ink,
-        textColor: '#ffffff',
-        iconTint: '#ffffff',
+        backgroundColor: buttonPrimaryColor,
+        borderColor: buttonPrimaryColor,
+        textColor: buttonPrimaryTextColor,
+        iconTint: buttonPrimaryTextColor,
         hintColor: 'rgba(255, 255, 255, 0.72)',
       }
     : {
-        backgroundColor: noPalette.surfaceMuted,
-        borderColor: noPalette.outline,
-        textColor: noPalette.ink,
-        iconTint: noPalette.ink,
-        hintColor: noPalette.subtleInk,
+        backgroundColor: buttonSecondaryColor,
+        borderColor: buttonSecondaryBorderColor,
+        textColor: buttonSecondaryTextColor,
+        iconTint: buttonSecondaryTextColor,
+        hintColor: buttonSecondaryTextColor,
       };
   const successPalette = {
-    backgroundColor: noPalette.accent,
-    borderColor: noPalette.accent,
+    backgroundColor: accentColor,
+    borderColor: accentColor,
     textColor: '#ffffff',
     iconTint: '#ffffff',
     hintColor: 'rgba(255, 255, 255, 0.8)',
@@ -86,9 +97,10 @@ export function ActionButton({
   const palette = success ? successPalette : loading ? effectiveLoadingPalette : basePalette;
   const visibleLabel = success ? successLabel : label;
   const resolvedLabel = loadingLabel && loading ? loadingLabel : visibleLabel;
-  const visibleIcon = success ? successIcon : icon;
+  const visibleIcon = success ? successIcon : loading ? (loadingIcon ?? icon) : icon;
   const hasHint = typeof hint === 'string' && hint.length > 0;
-  const iconStateKey = visibleIcon ?? 'none';
+  const visualStateKey = success ? 'success' : loading ? 'loading' : 'idle';
+  const iconStateKey = `${visualStateKey}:${visibleIcon ?? 'none'}`;
   const usesSfReplaceTransition = Platform.OS === 'ios';
   const isRotateMotion = loadingIconMotion === 'rotate' || loadingIconMotion === 'rotate-settle';
 
@@ -106,8 +118,6 @@ export function ActionButton({
   }, [loading, loadingIconMotion]);
 
   const sfShouldRotate = loadingIconMotion === 'rotate-settle' ? sfRotateHold : loading;
-  const iosIconKey =
-    loadingIconMotion === 'rotate' ? `sf-symbol-image:${loading ? 'loading' : 'idle'}` : 'sf-symbol-image';
   const textStateKey = `${success ? 'success' : loading ? 'loading' : 'idle'}:${resolvedLabel}:${hint ?? ''}`;
   const loadingSfEffect =
     usesSfReplaceTransition && sfShouldRotate && isRotateMotion
@@ -148,43 +158,31 @@ export function ActionButton({
       accessibilityLabel={resolvedLabel}
       disabled={disabled}
       onPress={onPress}
+      className={fill ? 'flex-1' : 'w-full'}
       style={({ pressed }) => ({
-        flex: 1,
         borderRadius: hasHint ? 24 : 20,
         opacity: disabled ? 0.6 : 1,
         transform: [{ scale: pressed && !disabled ? 0.97 : 1 }],
       })}>
       <Animated.View
+        className={cn(
+          'items-center justify-center border px-[18px]',
+          hasHint
+            ? 'rounded-3xl min-h-[74px] flex-col gap-1 py-3.5'
+            : 'rounded-[20px] min-h-[58px] flex-row gap-2'
+        )}
         style={[
-          {
-            borderRadius: hasHint ? 24 : 20,
-            borderWidth: 1,
-            backgroundColor: basePalette.backgroundColor,
-            borderColor: basePalette.borderColor,
-            minHeight: hasHint ? 74 : 58,
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: hasHint ? 'column' : 'row',
-            gap: hasHint ? 4 : 8,
-            paddingHorizontal: 18,
-            paddingVertical: hasHint ? 14 : 0,
-          },
+          { backgroundColor: basePalette.backgroundColor, borderColor: basePalette.borderColor },
           animatedButtonStyle,
         ]}>
         {visibleIcon ? (
-          <View
-            style={{
-              width: 20,
-              height: 20,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
+          <View className="size-5 items-center justify-center">
             <Animated.View
               entering={FadeIn.duration(180).withInitialValues({
                 opacity: 0,
                 transform: [{ scale: 0.94 }, { translateY: 2 }],
               })}
-              key={usesSfReplaceTransition ? iosIconKey : iconStateKey}>
+              key={usesSfReplaceTransition ? 'sf-symbol-image' : iconStateKey}>
               {usesSfReplaceTransition ? (
                 <Image
                   contentFit="contain"
@@ -211,12 +209,11 @@ export function ActionButton({
           </View>
         ) : null}
         <View
-          style={{
-            minHeight: hasHint ? 40 : 22,
-            minWidth: labelMinWidth,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
+          className={cn(
+            'items-center justify-center',
+            hasHint ? 'min-h-[40px]' : 'min-h-[22px]'
+          )}
+          style={labelMinWidth != null ? { minWidth: labelMinWidth } : undefined}>
           <Animated.View
             entering={FadeIn.duration(160).withInitialValues({
               opacity: 0,
@@ -224,27 +221,16 @@ export function ActionButton({
             })}
             exiting={FadeOut.duration(120)}
             key={textStateKey}
-            style={{
-              alignItems: 'center',
-              gap: hasHint ? 2 : 0,
-            }}>
+            className={cn('items-center', hasHint && 'gap-0.5')}>
             <Text
-              style={{
-                fontSize: 16,
-                fontWeight: '700',
-                color: palette.textColor,
-                letterSpacing: -0.2,
-              }}>
+              className="text-base font-bold tracking-[-0.2px]"
+              style={{ color: palette.textColor }}>
               {resolvedLabel}
             </Text>
             {hasHint ? (
               <Text
-                style={{
-                  fontSize: 13,
-                  lineHeight: 18,
-                  color: palette.hintColor,
-                  textAlign: 'center',
-                }}>
+                className="text-[13px] leading-[18px] text-center"
+                style={{ color: palette.hintColor }}>
                 {hint}
               </Text>
             ) : null}

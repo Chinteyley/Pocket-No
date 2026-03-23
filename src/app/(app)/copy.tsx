@@ -15,16 +15,15 @@ import {
   resolveNoCopyEntry,
   type NoCopyEntry,
 } from '@/features/no/deep-links';
-import { noPalette } from '@/features/no/theme';
 import { useMountEffect } from '@/hooks/useMountEffect';
+import { useCSSVariable } from 'uniwind';
 
-type CopyFlowState = 'loading' | 'copied' | 'error';
+type CopyFlowState = 'idle' | 'loading' | 'copied' | 'error';
 const COPY_BUTTON_PROGRESS_DELAY_MS = 240;
-
-const sheetTextColors = {
-  primary: process.env.EXPO_OS === 'ios' ? PlatformColor('label') : noPalette.ink,
-  secondary: process.env.EXPO_OS === 'ios' ? PlatformColor('secondaryLabel') : noPalette.subtleInk,
-};
+const COPY_SUCCESS_FLASH_MS = 900;
+const COPY_REASON_LINE_HEIGHT = 39;
+const COPY_REASON_MAX_LINES = 4;
+const COPY_REASON_BLOCK_MIN_HEIGHT = COPY_REASON_LINE_HEIGHT * COPY_REASON_MAX_LINES + 20;
 
 function CopyScreenContent({
   entry,
@@ -33,13 +32,34 @@ function CopyScreenContent({
   entry: NoCopyEntry;
   launchId: string;
 }) {
+  const inkColor = useCSSVariable('--color-ink') as string;
+  const subtleInkColor = useCSSVariable('--color-subtle-ink') as string;
+  const sheetTextColors = {
+    primary: process.env.EXPO_OS === 'ios' ? PlatformColor('label') : inkColor,
+    secondary: process.env.EXPO_OS === 'ios' ? PlatformColor('secondaryLabel') : subtleInkColor,
+  };
   const insets = useSafeAreaInsets();
   const [reason, setReason] = React.useState<NoReason | null>(null);
   const [state, setState] = React.useState<CopyFlowState>('loading');
   const [busyAction, setBusyAction] = React.useState<'copy-another' | null>(null);
-  const [settling, setSettling] = React.useState(false);
   const copyInFlight = React.useRef(false);
-  const settleTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copySuccessTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearCopySuccessTimer = () => {
+    if (copySuccessTimerRef.current) {
+      clearTimeout(copySuccessTimerRef.current);
+      copySuccessTimerRef.current = null;
+    }
+  };
+
+  const flashCopied = () => {
+    clearCopySuccessTimer();
+    setState('copied');
+    copySuccessTimerRef.current = setTimeout(() => {
+      copySuccessTimerRef.current = null;
+      setState((currentState) => (currentState === 'copied' ? 'idle' : currentState));
+    }, COPY_SUCCESS_FLASH_MS);
+  };
 
   const waitForCopyButtonProgressBeat = async () => {
     await new Promise((resolve) => {
@@ -57,30 +77,22 @@ function CopyScreenContent({
 
     try {
       const [nextReason] = await Promise.all([fetchFreshNoReason(), waitForCopyButtonProgressBeat()]);
-      React.startTransition(() => setReason(nextReason));
+      setReason(nextReason);
       await copyNoReasonToClipboard(nextReason);
-      setState('copied');
+      flashCopied();
     } catch (error) {
       console.warn(`Failed quick copy handoff for ${entry}:${launchId}`, error);
-      React.startTransition(() => setReason(null));
+      clearCopySuccessTimer();
+      setReason(null);
       setState('error');
     } finally {
       copyInFlight.current = false;
       setBusyAction(null);
-      setSettling(true);
-      settleTimerRef.current = setTimeout(() => {
-        settleTimerRef.current = null;
-        setSettling(false);
-      }, 800);
     }
   });
 
   const handleCopyAnother = React.useEffectEvent(async () => {
-    if (settleTimerRef.current) {
-      clearTimeout(settleTimerRef.current);
-      settleTimerRef.current = null;
-    }
-    setSettling(false);
+    clearCopySuccessTimer();
     setBusyAction('copy-another');
     await runCopyFlow();
   });
@@ -88,10 +100,11 @@ function CopyScreenContent({
   useMountEffect(() => {
     void runCopyFlow();
     return () => {
-      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+      clearCopySuccessTimer();
     };
   });
 
+  const showCopySuccess = state === 'copied';
   const statusLabel = state === 'error' ? 'Could not copy a fresh no' : null;
   const displayText =
     state === 'error'
@@ -100,63 +113,50 @@ function CopyScreenContent({
 
   return (
     <View
-      style={{
-        backgroundColor: 'transparent',
-        paddingHorizontal: 24,
-        paddingTop: 20,
-        paddingBottom: Math.max(insets.bottom, 10),
-        gap: 18,
-      }}>
+      className="bg-transparent px-6 pt-5"
+      style={{ paddingBottom: Math.max(insets.bottom, 10) }}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={{ gap: 14 }}>
-        {statusLabel ? (
-          <Animated.Text
-            entering={FadeInDown.duration(220).delay(30)}
-            selectable
-            style={{
-              fontSize: 13,
-              fontWeight: '700',
-              letterSpacing: -0.1,
-              color: noPalette.accent,
-            }}>
-            {statusLabel}
-          </Animated.Text>
-        ) : null}
+      <View className="pt-3">
+        <View
+          className="justify-center"
+          style={{ minHeight: COPY_REASON_BLOCK_MIN_HEIGHT }}>
+          <View className="gap-3.5">
+            {statusLabel ? (
+              <Animated.Text
+                entering={FadeInDown.duration(180)}
+                selectable
+                className="text-[13px] font-bold tracking-[-0.1px] text-accent">
+                {statusLabel}
+              </Animated.Text>
+            ) : null}
 
-        <Animated.Text
-          entering={FadeInDown.duration(240).delay(70)}
-          selectable
-          style={{
-            fontSize: 31,
-            lineHeight: 39,
-            fontWeight: '800',
-            letterSpacing: -1.1,
-            color: sheetTextColors.primary,
-          }}>
-          {displayText}
-        </Animated.Text>
-      </View>
+            <Animated.Text
+              entering={FadeInDown.duration(200)}
+              selectable
+              className="text-[31px] leading-[39px] font-extrabold tracking-[-1.1px]"
+              style={{ color: sheetTextColors.primary }}>
+              {displayText}
+            </Animated.Text>
+          </View>
+        </View>
 
-      <View
-        style={{
-          marginTop: 6,
-          borderRadius: 20,
-          borderCurve: 'continuous',
-          width: '100%',
-          overflow: 'hidden',
-        }}>
-        <ActionButton
-          label={state === 'error' ? 'Try again' : 'Copy another'}
-          icon="arrow.clockwise"
-          labelMinWidth={108}
-          onPress={() => void handleCopyAnother()}
-          loading={busyAction === 'copy-another' || state === 'loading' || settling}
-          loadingLabel="Copying..."
-          loadingIconMotion="rotate-settle"
-          disabled={busyAction !== null || state === 'loading' || settling}
-          tone="primary"
-        />
+        <View
+          className="mt-4 rounded-[20px] w-full overflow-hidden"
+          style={{ borderCurve: 'continuous' }}>
+          <ActionButton
+            label={state === 'error' ? 'Try again' : 'Copy another?'}
+            icon={state === 'error' ? 'arrow.clockwise' : 'doc.on.doc'}
+            labelMinWidth={108}
+            onPress={() => void handleCopyAnother()}
+            loading={busyAction === 'copy-another' || state === 'loading'}
+            loadingLabel="Copying..."
+            success={showCopySuccess}
+            successLabel="Copied"
+            disabled={busyAction !== null || state === 'loading' || showCopySuccess}
+            tone="primary"
+          />
+        </View>
       </View>
     </View>
   );
