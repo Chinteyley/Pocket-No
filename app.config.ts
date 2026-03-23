@@ -25,5 +25,11 @@ export default (): ExpoConfig => {
   return {
     ...appJson.expo,
     plugins,
+    extra: {
+      ...((appJson.expo as Record<string, unknown>).extra as Record<string, unknown>),
+      eas: {
+        projectId: '54bf3270-0da2-4c1d-87ec-a2c3a7378e2b',
+      },
+    },
   };
 };

@@ -35,7 +35,7 @@ type ActionButtonProps = {
     hintColor: string;
   };
   loadingAnimationSpec?: AnimationSpec | null;
-  loadingIconMotion?: 'none' | 'rotate';
+  loadingIconMotion?: 'none' | 'rotate' | 'rotate-settle';
   success?: boolean;
   successLabel?: string;
   successIcon?: SFSymbol;
@@ -90,11 +90,27 @@ export function ActionButton({
   const hasHint = typeof hint === 'string' && hint.length > 0;
   const iconStateKey = visibleIcon ?? 'none';
   const usesSfReplaceTransition = Platform.OS === 'ios';
+  const isRotateMotion = loadingIconMotion === 'rotate' || loadingIconMotion === 'rotate-settle';
+
+  // For rotate-settle: hold the SF rotate effect briefly after loading ends
+  // so rapid re-presses keep the icon spinning seamlessly.
+  const [sfRotateHold, setSfRotateHold] = React.useState(false);
+  React.useEffect(() => {
+    if (loadingIconMotion !== 'rotate-settle') return;
+    if (loading) {
+      setSfRotateHold(true);
+      return;
+    }
+    const timer = setTimeout(() => setSfRotateHold(false), 800);
+    return () => clearTimeout(timer);
+  }, [loading, loadingIconMotion]);
+
+  const sfShouldRotate = loadingIconMotion === 'rotate-settle' ? sfRotateHold : loading;
   const iosIconKey =
     loadingIconMotion === 'rotate' ? `sf-symbol-image:${loading ? 'loading' : 'idle'}` : 'sf-symbol-image';
   const textStateKey = `${success ? 'success' : loading ? 'loading' : 'idle'}:${resolvedLabel}:${hint ?? ''}`;
   const loadingSfEffect =
-    usesSfReplaceTransition && loading && loadingIconMotion === 'rotate'
+    usesSfReplaceTransition && sfShouldRotate && isRotateMotion
       ? {
           effect: 'rotate' as const,
           repeat: -1,

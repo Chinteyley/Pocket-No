@@ -10,7 +10,10 @@
     "ios": {
       "icon": "./assets/pocket-no.icon",
       "bundleIdentifier": "dev.ctey.pocketno",
-      "appleTeamId": "RXALJSS7PH"
+      "appleTeamId": "RXALJSS7PH",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "dev.ctey.pocketno",
