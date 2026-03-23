@@ -8,6 +8,7 @@ import {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { useCSSVariable } from 'uniwind';
 
 // Matrix dot-grid with alpha-based clear zone.
 // Inside text area: transparent (text shows through).
@@ -19,6 +20,8 @@ uniform float  u_text_cy;
 uniform float  u_text_ry;
 uniform float  u_text_rx;
 uniform float  u_fill;
+uniform float3 u_bg;
+uniform float3 u_fg;
 
 float hash(float2 p) {
   return fract(sin(dot(p, float2(127.1, 311.7))) * 43758.5453);
@@ -49,8 +52,8 @@ half4 main(float2 xy) {
   // During fill, revealBase → 1 everywhere (floods text area)
   float  reveal     = mix(revealBase, 1.0, u_fill);
 
-  half3 bg  = half3(1.000, 0.973, 0.941);
-  half3 fg  = half3(0.910, 0.424, 0.184);
+  half3 bg  = half3(u_bg.x, u_bg.y, u_bg.z);
+  half3 fg  = half3(u_fg.x, u_fg.y, u_fg.z);
   float dot = dotMask * blink * peak * active;
   half3 col = mix(bg, fg, dot);
 
@@ -61,6 +64,15 @@ half4 main(float2 xy) {
 }
 `;
 
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace('#', '');
+  return [
+    parseInt(h.substring(0, 2), 16) / 255,
+    parseInt(h.substring(2, 4), 16) / 255,
+    parseInt(h.substring(4, 6), 16) / 255,
+  ];
+}
+
 type Props = {
   textCy?: SharedValue<number>;
   textRy?: SharedValue<number>;
@@ -69,6 +81,12 @@ type Props = {
 };
 
 export function AmbientBackground({ textCy, textRy, textRx, textFill }: Props) {
+  const warmSurface = (useCSSVariable('--color-warm-surface') as string) ?? '#fff7ef';
+  const accent = (useCSSVariable('--color-accent') as string) ?? '#e86c2f';
+
+  const bgRgb = useMemo(() => hexToRgb(warmSurface), [warmSurface]);
+  const fgRgb = useMemo(() => hexToRgb(accent), [accent]);
+
   const defaultCy = useSharedValue(0);
   const defaultRy = useSharedValue(0);
   const defaultRx = useSharedValue(0);
@@ -94,12 +112,14 @@ export function AmbientBackground({ textCy, textRy, textRx, textFill }: Props) {
     u_text_ry: ry.value,
     u_text_rx: rx.value,
     u_fill:    fill.value,
+    u_bg:      bgRgb as [number, number, number],
+    u_fg:      fgRgb as [number, number, number],
   }));
 
   if (!effect) return null;
 
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+    <View className="absolute inset-0" pointerEvents="none">
       <Canvas style={StyleSheet.absoluteFill}>
         <Fill>
           <Shader source={effect} uniforms={uniforms} />

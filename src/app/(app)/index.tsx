@@ -4,7 +4,6 @@ import { Stack } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 import { useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActionButton } from '@/components/no/action-button';
 import { AmbientBackground } from '@/components/no/ambient-background';
@@ -14,15 +13,20 @@ import {
   fetchFreshNoReason,
 } from '@/features/no/no-reason-service';
 import type { NoReason } from '@/features/no/contracts';
-import { noPalette } from '@/features/no/theme';
 import { useMountEffect } from '@/hooks/useMountEffect';
+import { useCSSVariable } from 'uniwind';
 
 const HOME_REASON_TRANSITION_DELAY_MS = 240;
 const HOME_NEW_BUTTON_PROGRESS_DELAY_MS = 450;
 const HOME_COPY_BUTTON_PROGRESS_DELAY_MS = 180;
 
 export default function PocketNoHomeScreen() {
-  const insets = useSafeAreaInsets();
+  const inkColor = useCSSVariable('--color-ink') as string;
+  const accentColor = useCSSVariable('--color-accent') as string;
+  const subtleInkColor = useCSSVariable('--color-subtle-ink') as string;
+  const loadingSurfaceColor = useCSSVariable('--color-loading-surface') as string;
+  const loadingBorderColor = useCSSVariable('--color-loading-border') as string;
+
   const textCy   = useSharedValue(0.44);
   const textRy   = useSharedValue(0.10);
   const textRx   = useSharedValue(0.42);
@@ -158,10 +162,10 @@ export default function PocketNoHomeScreen() {
   });
 
   return (
-    <View style={{ flex: 1, backgroundColor: noPalette.paper }}>
+    <View className="flex-1 bg-paper">
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={{ flex: 1, paddingTop: insets.top }}>
+      <View className="flex-1 pt-safe">
         <ReasonCard
           reason={reason}
           isLoading={busyAction === 'loading' && reason === null}
@@ -180,46 +184,33 @@ export default function PocketNoHomeScreen() {
       <AmbientBackground textCy={textCy} textRy={textRy} textRx={textRx} textFill={textFill} />
 
       <View
-        style={{
-          marginHorizontal: 20,
-          marginBottom: insets.bottom + 16,
-          borderRadius: 28,
-          borderWidth: 1,
-          borderColor: noPalette.outline,
-          backgroundColor: '#fff7ef',
-          boxShadow: `0 18px 42px ${noPalette.shadowSoft}`,
-          paddingHorizontal: 14,
-          paddingTop: 14,
-          paddingBottom: 10,
-        }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            gap: 10,
-          }}>
+        className="mx-5 mb-safe-offset-4 rounded-[28px] border border-outline bg-warm-surface px-3.5 pt-3.5 pb-2.5"
+        style={{ boxShadow: '0 18px 42px rgba(0,0,0,0.06)' }}>
+        <View className="flex-row gap-2.5">
           <ActionButton
+            fill
             label="Copy"
             icon="doc.on.doc"
             success={showCopySuccess}
             successLabel="Copied!"
             labelMinWidth={68}
             onPress={() => void handleCopy()}
-            loading={busyAction === 'copy'}
             disabled={busyAction !== null || showCopySuccess}
             tone="primary"
           />
           <ActionButton
+            fill
             label="New"
             icon="arrow.clockwise"
             onPress={() => void handleAnotherOne()}
             loading={busyAction === 'another'}
             loadingIconMotion="rotate"
             loadingPalette={{
-              backgroundColor: '#f9efe8',
-              borderColor: 'rgba(232, 108, 47, 0.18)',
-              textColor: noPalette.ink,
-              iconTint: noPalette.accent,
-              hintColor: noPalette.subtleInk,
+              backgroundColor: loadingSurfaceColor,
+              borderColor: loadingBorderColor,
+              textColor: inkColor,
+              iconTint: accentColor,
+              hintColor: subtleInkColor,
             }}
             loadingAnimationSpec={null}
             disabled={busyAction !== null}
@@ -228,18 +219,8 @@ export default function PocketNoHomeScreen() {
         </View>
         <View
           pointerEvents="none"
-          style={{
-            alignItems: 'center',
-            paddingTop: 10,
-          }}>
-          <View
-            style={{
-              width: 44,
-              height: 5,
-              borderRadius: 999,
-              backgroundColor: 'rgba(17, 17, 17, 0.08)',
-            }}
-          />
+          className="items-center pt-2.5">
+          <View className="w-11 h-[5px] rounded-full bg-outline" />
         </View>
       </View>
     </View>

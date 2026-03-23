@@ -1,8 +1,8 @@
 import * as QuickActions from 'expo-quick-actions';
 import React from 'react';
 import { Stack } from 'expo-router/stack';
+import { useCSSVariable } from 'uniwind';
 
-import { noPalette } from '@/features/no/theme';
 import { useMountEffect } from '@/hooks/useMountEffect';
 
 export const unstable_settings = {
@@ -10,6 +10,9 @@ export const unstable_settings = {
 };
 
 export default function AppLayout() {
+  const paperColor = useCSSVariable('--color-paper') as string;
+  const inkColor = useCSSVariable('--color-ink') as string;
+
   const prepareNativeSurfaces = React.useEffectEvent(async () => {
     if (process.env.EXPO_OS === 'web') {
       return;
@@ -42,10 +45,10 @@ export default function AppLayout() {
     <Stack
       screenOptions={{
         headerShadowVisible: false,
-        headerStyle: { backgroundColor: noPalette.paper },
-        headerTintColor: noPalette.ink,
+        headerStyle: { backgroundColor: paperColor },
+        headerTintColor: inkColor,
         headerBackButtonDisplayMode: 'minimal',
-        contentStyle: { backgroundColor: noPalette.paper },
+        contentStyle: { backgroundColor: paperColor },
       }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
