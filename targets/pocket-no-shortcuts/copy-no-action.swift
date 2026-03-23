@@ -1,36 +1,18 @@
 import AppIntents
 import Foundation
 import UIKit
-import WidgetKit
-
-struct NoReasonWidgetProps {
-  let text: String
-  let kicker: String
-
-  var dictionary: [String: Any] {
-    [
-      "text": text,
-      "kicker": kicker,
-    ]
-  }
-}
 
 enum NoReasonCopySupport {
-  static let widgetKind = "PocketNoWidget"
-  static let appGroupIdentifier = "group.dev.ctey.pocketno"
   static let appScheme = "pocketno"
-  static let copyRoutePath = "/copy"
+  static let copyRouteHost = "copy"
   static let fallbackReason = "In a different season of life, I might say yes\u{2014}but not right now."
-  static let widgetKicker = "TAP TO COPY"
 
   private static let reasonCatalogFileName = "reason"
   private static let reasonCatalogFileExtension = "json"
-  private static let widgetTimelineStorageKey = "__expo_widgets_\(widgetKind)_timeline"
 
   static func copyFreshReason() -> String {
     let copiedText = randomReasonLine()
     UIPasteboard.general.string = copiedText
-    updateWidgetSnapshot(text: copiedText)
     return copiedText
   }
 
@@ -43,47 +25,10 @@ enum NoReasonCopySupport {
       ),
     ]
     var queryComponents = URLComponents()
+    queryComponents.scheme = appScheme
+    queryComponents.host = copyRouteHost
     queryComponents.queryItems = queryItems
-    let query = queryComponents.percentEncodedQuery.map { "?\($0)" } ?? ""
-
-    return URL(string: "\(appScheme)://\(copyRoutePath)\(query)")!
-  }
-
-  static func widgetProps(from storedProps: [String: Any]?) -> NoReasonWidgetProps {
-    let fallback = NoReasonWidgetProps(
-      text: fallbackReason,
-      kicker: widgetKicker
-    )
-
-    guard let storedProps else {
-      return fallback
-    }
-
-    return NoReasonWidgetProps(
-      text: storedProps["text"] as? String ?? fallback.text,
-      kicker: storedProps["kicker"] as? String ?? fallback.kicker
-    )
-  }
-
-  private static func updateWidgetSnapshot(text: String) {
-    guard let defaults = UserDefaults(suiteName: appGroupIdentifier) else {
-      return
-    }
-
-    let now = Date()
-    let farFuture = Calendar.current.date(byAdding: .year, value: 1, to: now) ?? now
-    let props = NoReasonWidgetProps(
-      text: text,
-      kicker: widgetKicker
-    ).dictionary
-
-    let entries: [[String: Any]] = [
-      ["timestamp": Int(now.timeIntervalSince1970 * 1000), "props": props],
-      ["timestamp": Int(farFuture.timeIntervalSince1970 * 1000), "props": props],
-    ]
-
-    defaults.set(entries, forKey: widgetTimelineStorageKey)
-    WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
+    return queryComponents.url!
   }
 
   private static func randomReasonLine() -> String {

@@ -74,7 +74,6 @@ function CopyScreenContent({
   });
 
   useMountEffect(() => {
-    console.log('[PocketNo] CopyScreen mounted', { entry, launchId });
     void runCopyFlow();
   });
 

@@ -34,7 +34,6 @@
     "expo-symbols": "~55.0.5",
     "expo-system-ui": "~55.0.10",
     "expo-web-browser": "~55.0.10",
-    "expo-widgets": "^55.0.7",
     "pressto": "^0.6.1",
     "react": "19.2.0",
     "react-dom": "19.2.0",

@@ -39,25 +39,6 @@
         }
       ],
       "@bacons/apple-targets",
-      [
-        "expo-widgets",
-        {
-          "bundleIdentifier": "dev.ctey.pocketno.ExpoWidgetsTarget",
-          "groupIdentifier": "group.dev.ctey.pocketno",
-          "widgets": [
-            {
-              "name": "PocketNoWidget",
-              "displayName": "Pocket-No",
-              "description": "A quick reason for saying no.",
-              "supportedFamilies": [
-                "systemSmall",
-                "systemMedium",
-                "accessoryInline"
-              ]
-            }
-          ]
-        }
-      ],
       "./plugins/with-screenless-quick-copy"
     ],
     "experiments": {

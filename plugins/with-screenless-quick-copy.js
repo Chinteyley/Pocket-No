@@ -6,24 +6,16 @@ const {
 } = require('expo/config-plugins');
 
 const PLUGIN_NAME = 'with-screenless-quick-copy';
-const WIDGET_TARGET_NAME = 'ExpoWidgetsTarget';
 const MAIN_APP_TARGET_NAME = 'PocketNo';
 const SHORTCUTS_TARGET_NAME = 'PocketNoShortcuts';
 const SHARED_NATIVE_GROUP_NAME = 'PocketNoNative';
 const SHORTCUTS_TARGET_PATH = 'targets/pocket-no-shortcuts';
 const COPY_HELPER_FILENAME = 'copy-no-action.swift';
 const COPY_SHORTCUT_FILENAME = 'CopyNoShortcut.swift';
-const OPEN_COPY_SHEET_INTENT_FILENAME = 'OpenCopySheetIntent.swift';
-const OPEN_COPY_SHEET_INTENT_APP_FILENAME = 'OpenCopySheetIntent+App.swift';
-const OPEN_COPY_SHEET_INTENT_WIDGET_FILENAME = 'OpenCopySheetIntent+Widget.swift';
 const REASON_CATALOG_FILENAME = 'reason.json';
 const COPY_HELPER_SOURCE_PATH = `../${SHORTCUTS_TARGET_PATH}/${COPY_HELPER_FILENAME}`;
 const REASON_CATALOG_SOURCE_PATH = `../${REASON_CATALOG_FILENAME}`;
 const COPY_SHORTCUT_SOURCE_PATH = `../plugins/ios/${COPY_SHORTCUT_FILENAME}`;
-const OPEN_COPY_SHEET_INTENT_SOURCE_PATH = `../plugins/ios/${OPEN_COPY_SHEET_INTENT_FILENAME}`;
-const OPEN_COPY_SHEET_INTENT_APP_SOURCE_PATH = `../plugins/ios/${OPEN_COPY_SHEET_INTENT_APP_FILENAME}`;
-const OPEN_COPY_SHEET_INTENT_WIDGET_SOURCE_PATH = `../plugins/ios/${OPEN_COPY_SHEET_INTENT_WIDGET_FILENAME}`;
-const WIDGET_SWIFT_SOURCE_PATH = '../plugins/ios/PocketNoWidget.swift';
 
 function ensureTargetDeploymentTarget(project, targetName, deploymentTarget) {
   const target = project.pbxTargetByName(targetName);
@@ -52,8 +44,7 @@ function ensureTargetDeploymentTarget(project, targetName, deploymentTarget) {
 /**
  * Find a target's build phase of a given type by walking its buildPhases array,
  * bypassing the comment-based lookup in the xcode library which fails when
- * the phase was created with a non-standard comment (e.g. expo-widgets uses
- * "Embed Foundation Extensions" instead of "Sources").
+ * the phase was created with a non-standard comment.
  */
 function findBuildPhase(project, targetUuid, phaseType) {
   const target = project.pbxNativeTargetSection()[targetUuid];
@@ -196,7 +187,7 @@ function addFileReferenceToTarget(project, { fileReference, targetUuid, phaseTyp
   });
 }
 
-const withWidgetQuickCopyXcode = (config) =>
+const withShortcutCopyXcode = (config) =>
   withXcodeProject(config, (config) => {
     const project = config.modResults;
     const sharedGroupKey = ensureGroup(project, SHARED_NATIVE_GROUP_NAME);
@@ -212,58 +203,6 @@ const withWidgetQuickCopyXcode = (config) =>
       filepath: COPY_SHORTCUT_SOURCE_PATH,
       groupKey: sharedGroupKey,
     });
-    const openCopySheetIntentFile = ensureSharedFileReference(project, {
-      filepath: OPEN_COPY_SHEET_INTENT_SOURCE_PATH,
-      groupKey: sharedGroupKey,
-    });
-    const openCopySheetIntentAppFile = ensureSharedFileReference(project, {
-      filepath: OPEN_COPY_SHEET_INTENT_APP_SOURCE_PATH,
-      groupKey: sharedGroupKey,
-    });
-    const openCopySheetIntentWidgetFile = ensureSharedFileReference(project, {
-      filepath: OPEN_COPY_SHEET_INTENT_WIDGET_SOURCE_PATH,
-      groupKey: sharedGroupKey,
-    });
-    const widgetSwiftFile = ensureSharedFileReference(project, {
-      filepath: WIDGET_SWIFT_SOURCE_PATH,
-      groupKey: sharedGroupKey,
-    });
-    const widgetTargetUuid = project.findTargetKey(WIDGET_TARGET_NAME);
-
-    if (widgetTargetUuid) {
-      addFileReferenceToTarget(project, {
-        fileReference: copyHelperFile,
-        targetUuid: widgetTargetUuid,
-        phaseType: 'PBXSourcesBuildPhase',
-        phaseLabel: 'Sources',
-      });
-      addFileReferenceToTarget(project, {
-        fileReference: widgetSwiftFile,
-        targetUuid: widgetTargetUuid,
-        phaseType: 'PBXSourcesBuildPhase',
-        phaseLabel: 'Sources',
-      });
-      addFileReferenceToTarget(project, {
-        fileReference: openCopySheetIntentFile,
-        targetUuid: widgetTargetUuid,
-        phaseType: 'PBXSourcesBuildPhase',
-        phaseLabel: 'Sources',
-      });
-      addFileReferenceToTarget(project, {
-        fileReference: openCopySheetIntentWidgetFile,
-        targetUuid: widgetTargetUuid,
-        phaseType: 'PBXSourcesBuildPhase',
-        phaseLabel: 'Sources',
-      });
-      addFileReferenceToTarget(project, {
-        fileReference: reasonCatalogFile,
-        targetUuid: widgetTargetUuid,
-        phaseType: 'PBXResourcesBuildPhase',
-        phaseLabel: 'Resources',
-      });
-
-      ensureTargetDeploymentTarget(project, WIDGET_TARGET_NAME, '17.0');
-    }
 
     const mainAppTargetUuid = project.findTargetKey(MAIN_APP_TARGET_NAME);
 
@@ -281,18 +220,6 @@ const withWidgetQuickCopyXcode = (config) =>
         phaseLabel: 'Sources',
       });
       addFileReferenceToTarget(project, {
-        fileReference: openCopySheetIntentFile,
-        targetUuid: mainAppTargetUuid,
-        phaseType: 'PBXSourcesBuildPhase',
-        phaseLabel: 'Sources',
-      });
-      addFileReferenceToTarget(project, {
-        fileReference: openCopySheetIntentAppFile,
-        targetUuid: mainAppTargetUuid,
-        phaseType: 'PBXSourcesBuildPhase',
-        phaseLabel: 'Sources',
-      });
-      addFileReferenceToTarget(project, {
         fileReference: reasonCatalogFile,
         targetUuid: mainAppTargetUuid,
         phaseType: 'PBXResourcesBuildPhase',
@@ -305,4 +232,4 @@ const withWidgetQuickCopyXcode = (config) =>
     return config;
   });
 
-module.exports = createRunOncePlugin(withWidgetQuickCopyXcode, PLUGIN_NAME, '1.0.0');
+module.exports = createRunOncePlugin(withShortcutCopyXcode, PLUGIN_NAME, '1.0.0');

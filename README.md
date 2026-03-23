@@ -2,7 +2,7 @@
 
 Pocket-No is a small Expo app for one job: generate a sharp, funny, low-friction way to say no and copy it immediately.
 
-The app ships the core screen, a quick-copy route, an API-backed reason feed, an iOS widget snapshot, and native shortcuts so the same "give me a no now" action can work from more than one surface.
+The app ships the core screen, a quick-copy route, an API-backed reason feed, and native shortcuts so the same "give me a no now" action can work from more than one surface.
 
 ## What It Does
 
@@ -11,7 +11,6 @@ The app ships the core screen, a quick-copy route, an API-backed reason feed, an
 - Generates another line without leaving the screen.
 - Supports a dedicated quick-copy flow at `/copy`.
 - Exposes an API route at `/api/no`.
-- Primes and updates an iOS widget snapshot after copies.
 - Registers native quick actions and an App Intent-based shortcut flow on iOS.
 
 ## Stack
@@ -22,7 +21,6 @@ The app ships the core screen, a quick-copy route, an API-backed reason feed, an
 - React Native 0.83
 - TypeScript
 - `expo-quick-actions`
-- `expo-widgets`
 - `@bacons/apple-targets`
 - Reanimated + Skia for visual treatment
 
@@ -56,7 +54,7 @@ The app ships the core screen, a quick-copy route, an API-backed reason feed, an
 
 UI flows call `fetchFreshNoReason()` from `src/features/no/no-reason-service.ts`. If the API fails, the client falls back to a smaller in-app catalog from `src/features/no/catalog.ts`.
 
-Deep links and native entry points route into the quick-copy screen with an `entry` param so the app can explain whether the copy came from the main app, a quick action, the widget, or the action button shortcut.
+Deep links and native entry points route into the quick-copy screen with an `entry` param so the app can explain whether the copy came from the main app or the action button shortcut.
 
 ## Getting Started
 
@@ -104,18 +102,16 @@ EXPO_PUBLIC_SITE_ORIGIN=https://pocketno.example.com bun run web
 
 ## Native Surfaces
 
-This repo includes iOS-specific shortcut and widget work:
+This repo includes iOS-specific shortcut work:
 
 - Home screen quick action via `expo-quick-actions`
-- Widget target via `expo-widgets`
 - App Intent target in `targets/pocket-no-shortcuts`
 - Custom config plugin in `plugins/with-screenless-quick-copy.js`
 
 Notes:
 
-- The widget target is configured for iOS 17+.
 - The App Intent shortcut target is configured for iOS 18+.
-- If you change widget or shortcut target wiring, regenerate native iOS artifacts before validating in Xcode.
+- If you change shortcut target wiring, regenerate native iOS artifacts before validating in Xcode.
 
 ## Editing The Reason Catalog
 
@@ -126,16 +122,15 @@ Guidelines:
 - Keep entries as plain strings.
 - Avoid empty lines.
 - Duplicates are removed during normalization.
-- The client and native shortcut/widget helpers rely on this catalog shape.
+- The client and native shortcut helpers rely on this catalog shape.
 
 ## Useful Files
 
 - `src/app/(app)/index.tsx`: main Pocket-No screen
 - `src/app/(app)/copy.tsx`: quick-copy route
 - `src/app/api/no+api.ts`: random reason API
-- `src/features/no/no-reason-service.ts`: clipboard + widget sync orchestration
+- `src/features/no/no-reason-service.ts`: clipboard orchestration
 - `src/features/no/remote-catalog.ts`: normalized `reason.json` loader
 - `src/features/no/deep-links.ts`: route/scheme helpers
-- `src/features/no/no-reason-widget.tsx`: widget UI
 - `plugins/with-screenless-quick-copy.js`: iOS target/resource wiring
 - `targets/pocket-no-shortcuts/copy-no-action.swift`: App Intent copy implementation

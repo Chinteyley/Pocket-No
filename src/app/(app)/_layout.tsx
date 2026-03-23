@@ -5,7 +5,6 @@ import React from 'react';
 import { Stack } from 'expo-router/stack';
 
 import { resolveNoCopyRouteHrefFromSystemPath } from '@/features/no/deep-links';
-import { ensureNoReasonWidgetSnapshot } from '@/features/no/widget-sync';
 import { noPalette } from '@/features/no/theme';
 import { useMountEffect } from '@/hooks/useMountEffect';
 
@@ -15,34 +14,28 @@ export const unstable_settings = {
 
 export default function AppLayout() {
   const router = useRouter();
-  const lastHandledWidgetLaunchRef = React.useRef<string | null>(null);
+  const lastHandledLaunchRef = React.useRef<string | null>(null);
 
   const routeNoCopyLaunch = React.useEffectEvent((url: string | null | undefined) => {
     if (!url) {
-      console.log('[PocketNo] routeNoCopyLaunch skipped: empty url');
       return;
     }
 
     const href = resolveNoCopyRouteHrefFromSystemPath(url);
     if (!href) {
-      console.log('[PocketNo] routeNoCopyLaunch skipped: no copy href', { url });
       return;
     }
 
     const launchKey = `${href.params.entry}:${href.params.launchId}`;
-    if (lastHandledWidgetLaunchRef.current === launchKey) {
-      console.log('[PocketNo] routeNoCopyLaunch skipped: duplicate launch', { launchKey });
+    if (lastHandledLaunchRef.current === launchKey) {
       return;
     }
 
-    console.log('[PocketNo] routeNoCopyLaunch pushing href', { url, href, launchKey });
-    lastHandledWidgetLaunchRef.current = launchKey;
+    lastHandledLaunchRef.current = launchKey;
     router.push(href);
   });
 
   const prepareNativeSurfaces = React.useEffectEvent(async () => {
-    await ensureNoReasonWidgetSnapshot();
-
     if (process.env.EXPO_OS === 'web') {
       return;
     }
@@ -79,12 +72,10 @@ export default function AppLayout() {
         return;
       }
 
-      console.log('[PocketNo] Linking.getInitialURL resolved', { url });
       routeNoCopyLaunch(url);
     });
 
     const urlSubscription = Linking.addEventListener('url', ({ url }) => {
-      console.log('[PocketNo] Linking url event', { url });
       routeNoCopyLaunch(url);
     });
 

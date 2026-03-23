@@ -213,6 +213,7 @@ export default function PocketNoHomeScreen() {
             icon="arrow.clockwise"
             onPress={() => void handleAnotherOne()}
             loading={busyAction === 'another'}
+            loadingIconMotion="rotate"
             loadingPalette={{
               backgroundColor: '#f9efe8',
               borderColor: 'rgba(232, 108, 47, 0.18)',

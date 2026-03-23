@@ -3,7 +3,6 @@ import * as Haptics from 'expo-haptics';
 
 import type { NoReason } from './contracts';
 import { fetchFreshNoReason as fetchFreshNoReasonFromApi } from './no-reason-api';
-import { updateNoReasonWidgetSnapshot } from './widget-sync';
 
 async function playSuccessHaptic() {
   if (process.env.EXPO_OS === 'web') {
@@ -19,7 +18,6 @@ async function playSuccessHaptic() {
 
 async function copyReason(reason: NoReason) {
   await Clipboard.setStringAsync(reason.copiedText);
-  await updateNoReasonWidgetSnapshot(reason);
   await playSuccessHaptic();
 }
 

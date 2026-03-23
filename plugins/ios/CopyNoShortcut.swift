@@ -10,7 +10,8 @@ struct CopyNoShortcutIntent: AppIntent {
 
   @MainActor
   func perform() async throws -> some IntentResult {
-    _ = await UIApplication.shared.open(NoReasonCopySupport.copyRouteURL(entry: "shortcut"))
+    let url = NoReasonCopySupport.copyRouteURL(entry: "shortcut")
+    _ = await UIApplication.shared.open(url)
     return .result()
   }
 }

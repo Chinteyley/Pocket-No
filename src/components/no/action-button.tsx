@@ -3,8 +3,9 @@ import {
   type AnimationSpec,
   type SFSymbol,
 } from 'expo-symbols';
+import { Image } from 'expo-image';
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 import Animated, {
   Easing,
   FadeIn,
@@ -13,7 +14,6 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   withTiming,
-  withRepeat,
 } from 'react-native-reanimated';
 
 import { noPalette } from '@/features/no/theme';
@@ -35,6 +35,7 @@ type ActionButtonProps = {
     hintColor: string;
   };
   loadingAnimationSpec?: AnimationSpec | null;
+  loadingIconMotion?: 'none' | 'rotate';
   success?: boolean;
   successLabel?: string;
   successIcon?: SFSymbol;
@@ -52,6 +53,7 @@ export function ActionButton({
   hint,
   loadingPalette,
   loadingAnimationSpec,
+  loadingIconMotion = 'none',
   success = false,
   successLabel = 'Copied',
   successIcon = 'checkmark',
@@ -87,7 +89,18 @@ export function ActionButton({
   const visibleIcon = success ? successIcon : icon;
   const hasHint = typeof hint === 'string' && hint.length > 0;
   const iconStateKey = visibleIcon ?? 'none';
+  const usesSfReplaceTransition = Platform.OS === 'ios';
+  const iosIconKey =
+    loadingIconMotion === 'rotate' ? `sf-symbol-image:${loading ? 'loading' : 'idle'}` : 'sf-symbol-image';
   const textStateKey = `${success ? 'success' : loading ? 'loading' : 'idle'}:${resolvedLabel}:${hint ?? ''}`;
+  const loadingSfEffect =
+    usesSfReplaceTransition && loading && loadingIconMotion === 'rotate'
+      ? {
+          effect: 'rotate' as const,
+          repeat: -1,
+          scope: 'whole-symbol' as const,
+        }
+      : null;
   const symbolAnimationSpec: AnimationSpec | undefined = loading
     ? loadingAnimationSpec ?? undefined
     : success
@@ -113,39 +126,6 @@ export function ActionButton({
       successPalette.borderColor,
     ]),
   }));
-  const loadingSpinProgress = useDerivedValue(() => {
-    if (!loading) {
-      return 0;
-    }
-
-    return withRepeat(
-      withTiming(1, {
-        duration: 520,
-        easing: Easing.linear,
-      }),
-      -1,
-      false
-    );
-  });
-  const animatedIconStyle = useAnimatedStyle(() => {
-    if (!loading) {
-      return {
-        transform: [{ rotate: '0deg' }, { scale: 1 }],
-      };
-    }
-
-    return {
-      transform: [
-        {
-          rotate: `${loadingSpinProgress.value * 360}deg`,
-        },
-        {
-          scale: 0.98,
-        },
-      ],
-    };
-  });
-
   return (
     <Pressable
       accessibilityRole="button"
@@ -188,15 +168,29 @@ export function ActionButton({
                 opacity: 0,
                 transform: [{ scale: 0.94 }, { translateY: 2 }],
               })}
-              key={iconStateKey}
-              style={animatedIconStyle}>
-              <SymbolView
-                animationSpec={symbolAnimationSpec}
-                name={visibleIcon}
-                size={18}
-                tintColor={palette.iconTint}
-                weight="semibold"
-              />
+              key={usesSfReplaceTransition ? iosIconKey : iconStateKey}>
+              {usesSfReplaceTransition ? (
+                <Image
+                  contentFit="contain"
+                  source={`sf:${visibleIcon}`}
+                  sfEffect={loadingSfEffect}
+                  style={{ width: 18, height: 18 }}
+                  tintColor={palette.iconTint}
+                  transition={{
+                    duration: 180,
+                    effect: 'sf:replace',
+                    timing: 'ease-in-out',
+                  }}
+                />
+              ) : (
+                <SymbolView
+                  animationSpec={symbolAnimationSpec}
+                  name={visibleIcon}
+                  size={18}
+                  tintColor={palette.iconTint}
+                  weight="semibold"
+                />
+              )}
             </Animated.View>
           </View>
         ) : null}
