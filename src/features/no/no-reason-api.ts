@@ -18,9 +18,11 @@ function isNoReason(value: unknown): value is NoReason {
   );
 }
 
+const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? '';
+
 export async function fetchFreshNoReason(): Promise<NoReason> {
   try {
-    const response = await fetch('/api/no', {
+    const response = await fetch(`${API_BASE}/api/no`, {
       headers: {
         Accept: 'application/json',
       },
