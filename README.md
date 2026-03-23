@@ -1,5 +1,7 @@
 # Pocket-No
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 Pocket-No is a small Expo app for one job: generate a sharp, funny, low-friction way to say no and copy it immediately.
 
 The app ships the core screen, a quick-copy route, an API-backed reason feed, and native shortcuts so the same "give me a no now" action can work from more than one surface.
@@ -22,6 +24,7 @@ The app ships the core screen, a quick-copy route, an API-backed reason feed, an
 - TypeScript
 - `expo-quick-actions`
 - `@bacons/apple-targets`
+- Uniwind (Tailwind CSS v4 for React Native)
 - Reanimated + Skia for visual treatment
 
 ## Project Shape
@@ -90,6 +93,12 @@ Lint:
 bun run lint
 ```
 
+Test:
+
+```bash
+bun run test
+```
+
 ## Environment
 
 `app.config.ts` reads `EXPO_PUBLIC_SITE_ORIGIN` and passes it into the Expo Router plugin when present. Set it when you need an explicit site origin for web/server output.
@@ -134,3 +143,7 @@ Guidelines:
 - `src/features/no/deep-links.ts`: route/scheme helpers
 - `plugins/with-screenless-quick-copy.js`: iOS target/resource wiring
 - `targets/pocket-no-shortcuts/copy-no-action.swift`: App Intent copy implementation
+
+## License
+
+[MIT](LICENSE)
