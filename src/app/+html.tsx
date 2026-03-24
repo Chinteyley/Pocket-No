@@ -3,8 +3,9 @@ import type { PropsWithChildren } from 'react';
 
 export default function Root({ children }: PropsWithChildren) {
   const siteOrigin = process.env.EXPO_PUBLIC_SITE_ORIGIN?.trim().replace(/\/$/, '') ?? '';
+  const origin = siteOrigin || 'https://pocket-no.ctey.dev';
   const description = 'Witty excuses to say no, one tap away.';
-  const ogImageUrl = siteOrigin ? `${siteOrigin}/og-pocket-no.png` : '/og-pocket-no.png';
+  const ogImageUrl = `${origin}/og-pocket-no.png`;
 
   return (
     <html lang="en">
@@ -25,8 +26,11 @@ export default function Root({ children }: PropsWithChildren) {
         <meta property="og:site_name" content="Pocket No" />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={siteOrigin || 'https://pocket-no.ctey.dev'} />
+        <meta property="og:url" content={origin} />
         <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
         <meta
           property="og:image:alt"
           content="Pocket No social card with the tagline The art of saying no."
