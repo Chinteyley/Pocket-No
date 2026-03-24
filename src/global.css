@@ -1,54 +1,62 @@
-@import 'tailwindcss';
-@import 'uniwind';
+@import "tailwindcss";
+@import "uniwind";
+
+html,
+body,
+#root {
+    min-height: 100%;
+    margin: 0;
+    background-color: #332e2a;
+}
 
 @layer theme {
-  :root {
-    @variant light {
-      --color-paper: #ffffff;
-      --color-surface: #ffffff;
-      --color-surface-muted: #f5f5f5;
-      --color-ink: #111111;
-      --color-subtle-ink: #555555;
-      --color-muted: #999999;
-      --color-accent: #e86c2f;
-      --color-accent-wash: #fde8d8;
-      --color-outline: rgba(0, 0, 0, 0.08);
-      --color-warm-surface: #fff7ef;
-      --color-button-primary: #e86c2f;
-      --color-button-primary-text: #ffffff;
-      --color-button-secondary: #f5f5f5;
-      --color-button-secondary-text: #111111;
-      --color-button-secondary-border: rgba(0, 0, 0, 0.08);
-      --color-loading-surface: #f9efe8;
-      --color-loading-border: rgba(232, 108, 47, 0.18);
-      --color-shadow-soft: rgba(0, 0, 0, 0.06);
-      --color-shadow-strong: rgba(0, 0, 0, 0.14);
+    :root {
+        @variant light {
+            --color-paper: #ffffff;
+            --color-surface: #ffffff;
+            --color-surface-muted: #f5f5f5;
+            --color-ink: #111111;
+            --color-subtle-ink: #555555;
+            --color-muted: #999999;
+            --color-accent: #e86c2f;
+            --color-accent-wash: #fde8d8;
+            --color-outline: rgba(0, 0, 0, 0.08);
+            --color-warm-surface: #fff7ef;
+            --color-button-primary: #e86c2f;
+            --color-button-primary-text: #ffffff;
+            --color-button-secondary: #f5f5f5;
+            --color-button-secondary-text: #111111;
+            --color-button-secondary-border: rgba(0, 0, 0, 0.08);
+            --color-loading-surface: #f9efe8;
+            --color-loading-border: rgba(232, 108, 47, 0.18);
+            --color-shadow-soft: rgba(0, 0, 0, 0.06);
+            --color-shadow-strong: rgba(0, 0, 0, 0.14);
+        }
+        @variant dark {
+            --color-paper: #28282a;
+            --color-surface: #323234;
+            --color-surface-muted: #3a3a3c;
+            --color-ink: #f5f5f5;
+            --color-subtle-ink: #b0b0b0;
+            --color-muted: #8a8a8a;
+            --color-accent: #ff9f5a;
+            --color-accent-wash: #6b4a32;
+            --color-outline: rgba(255, 255, 255, 0.12);
+            --color-warm-surface: #332e2a;
+            --color-button-primary: #ff9f5a;
+            --color-button-primary-text: #1a1a1a;
+            --color-button-secondary: #363638;
+            --color-button-secondary-text: #c0c0c0;
+            --color-button-secondary-border: rgba(255, 255, 255, 0.15);
+            --color-loading-surface: #3a3028;
+            --color-loading-border: rgba(255, 159, 90, 0.3);
+            --color-shadow-soft: rgba(0, 0, 0, 0.25);
+            --color-shadow-strong: rgba(0, 0, 0, 0.5);
+        }
     }
-    @variant dark {
-      --color-paper: #28282a;
-      --color-surface: #323234;
-      --color-surface-muted: #3a3a3c;
-      --color-ink: #f5f5f5;
-      --color-subtle-ink: #b0b0b0;
-      --color-muted: #8a8a8a;
-      --color-accent: #ff9f5a;
-      --color-accent-wash: #6b4a32;
-      --color-outline: rgba(255, 255, 255, 0.12);
-      --color-warm-surface: #332e2a;
-      --color-button-primary: #ff9f5a;
-      --color-button-primary-text: #1a1a1a;
-      --color-button-secondary: #363638;
-      --color-button-secondary-text: #c0c0c0;
-      --color-button-secondary-border: rgba(255, 255, 255, 0.15);
-      --color-loading-surface: #3a3028;
-      --color-loading-border: rgba(255, 159, 90, 0.3);
-      --color-shadow-soft: rgba(0, 0, 0, 0.25);
-      --color-shadow-strong: rgba(0, 0, 0, 0.5);
-    }
-  }
 }
 
 @theme {
-  --font-sans: 'System';
-  --font-display: 'SplineSans-Regular';
+    --font-sans: "System";
+    --font-display: "SplineSans-Regular";
 }
