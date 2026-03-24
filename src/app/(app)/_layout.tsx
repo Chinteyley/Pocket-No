@@ -1,6 +1,7 @@
 import * as QuickActions from 'expo-quick-actions';
 import React from 'react';
 import { Stack } from 'expo-router/stack';
+import Head from 'expo-router/head';
 import { useCSSVariable } from 'uniwind';
 
 import { useMountEffect } from '@/hooks/useMountEffect';
@@ -42,26 +43,32 @@ export default function AppLayout() {
   });
 
   return (
-    <Stack
-      screenOptions={{
-        headerShadowVisible: false,
-        headerStyle: { backgroundColor: paperColor },
-        headerTintColor: inkColor,
-        headerBackButtonDisplayMode: 'minimal',
-        contentStyle: { backgroundColor: paperColor },
-      }}>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="copy"
-        options={{
-          presentation: 'formSheet',
-          sheetGrabberVisible: true,
-          sheetAllowedDetents: 'fitToContents',
-          headerTransparent: true,
-          headerShown: false,
-          contentStyle: { backgroundColor: 'transparent' },
-        }}
-      />
-    </Stack>
+    <>
+      <Head>
+        <title>Pocket No</title>
+      </Head>
+      <Stack
+        screenOptions={{
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: paperColor },
+          headerTintColor: inkColor,
+          headerBackButtonDisplayMode: 'minimal',
+          contentStyle: { backgroundColor: paperColor },
+        }}>
+        <Stack.Screen name="index" options={{ headerShown: false, title: 'Pocket No' }} />
+        <Stack.Screen
+          name="copy"
+          options={{
+            title: 'Pocket No',
+            presentation: 'formSheet',
+            sheetGrabberVisible: true,
+            sheetAllowedDetents: 'fitToContents',
+            headerTransparent: true,
+            headerShown: false,
+            contentStyle: { backgroundColor: 'transparent' },
+          }}
+        />
+      </Stack>
+    </>
   );
 }
