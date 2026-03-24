@@ -12,6 +12,7 @@ export default function Root({ children }: PropsWithChildren) {
           content="width=device-width, initial-scale=1, shrink-to-fit=no"
         />
         <meta name="theme-color" content="#fff7ef" />
+        <title>Pocket No</title>
 
         <meta property="og:title" content="Pocket No" />
         <meta
