@@ -76,9 +76,12 @@ function CopyScreenContent({
     setState('loading');
 
     try {
-      const [nextReason] = await Promise.all([fetchFreshNoReason(), waitForCopyButtonProgressBeat()]);
-      setReason(nextReason);
-      await copyNoReasonToClipboard(nextReason);
+      const [nextReasonResult] = await Promise.all([
+        fetchFreshNoReason(),
+        waitForCopyButtonProgressBeat(),
+      ]);
+      setReason(nextReasonResult.reason);
+      await copyNoReasonToClipboard(nextReasonResult.reason);
       flashCopied();
     } catch (error) {
       console.warn(`Failed quick copy handoff for ${entry}:${launchId}`, error);

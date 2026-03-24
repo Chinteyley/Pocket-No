@@ -1,7 +1,8 @@
 import { Canvas, Fill, Shader, Skia } from '@shopify/react-native-skia';
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import {
+  cancelAnimation,
   Easing,
   type SharedValue,
   useDerivedValue,
@@ -9,6 +10,9 @@ import {
   withTiming,
 } from 'react-native-reanimated';
 import { useCSSVariable } from 'uniwind';
+
+import { useAmbientAnimationEnabled } from '@/hooks/useAmbientAnimationEnabled';
+import { useMountEffect } from '@/hooks/useMountEffect';
 
 // Matrix dot-grid with alpha-based clear zone.
 // Inside text area: transparent (text shows through).
@@ -74,15 +78,123 @@ function hexToRgb(hex: string): [number, number, number] {
 }
 
 type Props = {
+  isScreenActive?: boolean;
   textCy?: SharedValue<number>;
   textRy?: SharedValue<number>;
   textRx?: SharedValue<number>;
   textFill?: SharedValue<number>;
 };
 
-export function AmbientBackground({ textCy, textRy, textRx, textFill }: Props) {
+type AmbientShaderProps = {
+  bgRgb: [number, number, number];
+  fgRgb: [number, number, number];
+  effect: NonNullable<ReturnType<typeof Skia.RuntimeEffect.Make>>;
+  height: number;
+  width: number;
+  cy: SharedValue<number>;
+  ry: SharedValue<number>;
+  rx: SharedValue<number>;
+  fill: SharedValue<number>;
+};
+
+function AmbientShaderCanvas({
+  effect,
+  uniforms,
+}: {
+  effect: NonNullable<ReturnType<typeof Skia.RuntimeEffect.Make>>;
+  uniforms: SharedValue<{
+    u_resolution: [number, number];
+    u_time: number;
+    u_text_cy: number;
+    u_text_ry: number;
+    u_text_rx: number;
+    u_fill: number;
+    u_bg: [number, number, number];
+    u_fg: [number, number, number];
+  }>;
+}) {
+  return (
+    <View className="absolute inset-0" pointerEvents="none">
+      <Canvas style={StyleSheet.absoluteFill}>
+        <Fill>
+          <Shader source={effect} uniforms={uniforms} />
+        </Fill>
+      </Canvas>
+    </View>
+  );
+}
+
+function StaticAmbientShader({
+  bgRgb,
+  effect,
+  fgRgb,
+  width,
+  height,
+  cy,
+  ry,
+  rx,
+  fill,
+}: AmbientShaderProps) {
+  const uniforms = useDerivedValue(() => ({
+    u_resolution: [width, height] as [number, number],
+    u_time: 0,
+    u_text_cy: cy.value,
+    u_text_ry: ry.value,
+    u_text_rx: rx.value,
+    u_fill: fill.value,
+    u_bg: bgRgb,
+    u_fg: fgRgb,
+  }));
+
+  return <AmbientShaderCanvas effect={effect} uniforms={uniforms} />;
+}
+
+function AnimatedAmbientShader({
+  bgRgb,
+  effect,
+  fgRgb,
+  width,
+  height,
+  cy,
+  ry,
+  rx,
+  fill,
+}: AmbientShaderProps) {
+  const clock = useSharedValue(0);
+
+  useMountEffect(() => {
+    clock.value = withTiming(1e9, { duration: 1e9, easing: Easing.linear });
+
+    return () => {
+      cancelAnimation(clock);
+      clock.value = 0;
+    };
+  });
+
+  const uniforms = useDerivedValue(() => ({
+    u_resolution: [width, height] as [number, number],
+    u_time: clock.value,
+    u_text_cy: cy.value,
+    u_text_ry: ry.value,
+    u_text_rx: rx.value,
+    u_fill: fill.value,
+    u_bg: bgRgb,
+    u_fg: fgRgb,
+  }));
+
+  return <AmbientShaderCanvas effect={effect} uniforms={uniforms} />;
+}
+
+export function AmbientBackground({
+  isScreenActive = true,
+  textCy,
+  textRy,
+  textRx,
+  textFill,
+}: Props) {
   const warmSurface = (useCSSVariable('--color-warm-surface') as string) ?? '#fff7ef';
   const accent = (useCSSVariable('--color-accent') as string) ?? '#e86c2f';
+  const shouldAnimate = useAmbientAnimationEnabled(isScreenActive);
 
   const bgRgb = useMemo(() => hexToRgb(warmSurface), [warmSurface]);
   const fgRgb = useMemo(() => hexToRgb(accent), [accent]);
@@ -97,34 +209,21 @@ export function AmbientBackground({ textCy, textRy, textRx, textFill }: Props) {
   const rx = textRx ?? defaultRx;
   const fill = textFill ?? defaultFill;
   const { width, height } = useWindowDimensions();
-  const clock = useSharedValue(0);
-
   const effect = useMemo(() => Skia.RuntimeEffect.Make(SKSL), []);
-
-  useEffect(() => {
-    clock.value = withTiming(1e9, { duration: 1e9, easing: Easing.linear });
-  }, [clock]);
-
-  const uniforms = useDerivedValue(() => ({
-    u_resolution: [width, height] as [number, number],
-    u_time:    clock.value,
-    u_text_cy: cy.value,
-    u_text_ry: ry.value,
-    u_text_rx: rx.value,
-    u_fill:    fill.value,
-    u_bg:      bgRgb as [number, number, number],
-    u_fg:      fgRgb as [number, number, number],
-  }));
 
   if (!effect) return null;
 
-  return (
-    <View className="absolute inset-0" pointerEvents="none">
-      <Canvas style={StyleSheet.absoluteFill}>
-        <Fill>
-          <Shader source={effect} uniforms={uniforms} />
-        </Fill>
-      </Canvas>
-    </View>
-  );
+  const shaderProps = {
+    bgRgb,
+    effect,
+    fgRgb,
+    width,
+    height,
+    cy,
+    ry,
+    rx,
+    fill,
+  };
+
+  return shouldAnimate ? <AnimatedAmbientShader {...shaderProps} /> : <StaticAmbientShader {...shaderProps} />;
 }

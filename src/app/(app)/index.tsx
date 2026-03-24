@@ -1,5 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import * as QuickActions from 'expo-quick-actions';
+import { useIsFocused } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
@@ -21,6 +22,7 @@ const HOME_NEW_BUTTON_PROGRESS_DELAY_MS = 450;
 const HOME_COPY_BUTTON_PROGRESS_DELAY_MS = 180;
 
 export default function PocketNoHomeScreen() {
+  const isFocused = useIsFocused();
   const inkColor = useCSSVariable('--color-ink') as string;
   const accentColor = useCSSVariable('--color-accent') as string;
   const subtleInkColor = useCSSVariable('--color-subtle-ink') as string;
@@ -34,6 +36,7 @@ export default function PocketNoHomeScreen() {
   const [reason, setReason] = React.useState<NoReason | null>(null);
   const [busyAction, setBusyAction] = React.useState<'copy' | 'another' | 'loading' | null>('loading');
   const [showCopySuccess, setShowCopySuccess] = React.useState(false);
+  const [statusMessage, setStatusMessage] = React.useState<string | null>(null);
   const copySuccessTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const copyInFlight = React.useRef(false);
   const anotherInFlight = React.useRef(false);
@@ -57,6 +60,11 @@ export default function PocketNoHomeScreen() {
       copySuccessTimeoutRef.current = null;
       setShowCopySuccess(false);
     }, 1000);
+  };
+
+  const applyReasonResult = (nextReasonResult: Awaited<ReturnType<typeof fetchFreshNoReason>>) => {
+    React.startTransition(() => setReason(nextReasonResult.reason));
+    setStatusMessage(null);
   };
 
   const waitForTransitionBeat = async () => {
@@ -86,11 +94,17 @@ export default function PocketNoHomeScreen() {
       if (reason) {
         await Promise.all([copyNoReasonToClipboard(reason), waitForCopyButtonProgressBeat()]);
       } else {
-        const [nextReason] = await Promise.all([fetchFreshNoReason(), waitForCopyButtonProgressBeat()]);
-        React.startTransition(() => setReason(nextReason));
-        await copyNoReasonToClipboard(nextReason);
+        const [nextReasonResult] = await Promise.all([
+          fetchFreshNoReason(),
+          waitForCopyButtonProgressBeat(),
+        ]);
+        applyReasonResult(nextReasonResult);
+        await copyNoReasonToClipboard(nextReasonResult.reason);
       }
       flashCopied();
+    } catch (error) {
+      console.warn('Failed to copy no reason', error);
+      setStatusMessage('Could not copy right now. Try again.');
     } finally {
       setBusyAction(null);
       copyInFlight.current = false;
@@ -105,13 +119,20 @@ export default function PocketNoHomeScreen() {
     // Matrix floods in to wipe old text
     textFill.value = withTiming(1, { duration: 380 });
     try {
-      const [nextReason] = await Promise.all([fetchFreshNoReason(), waitForButtonProgressBeat()]);
-      React.startTransition(() => setReason(nextReason));
+      const [nextReasonResult] = await Promise.all([
+        fetchFreshNoReason(),
+        waitForButtonProgressBeat(),
+      ]);
+      applyReasonResult(nextReasonResult);
       // Matrix retreats to reveal new text
       textFill.value = withTiming(0, { duration: 420 });
       if (process.env.EXPO_OS === 'ios') {
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       }
+    } catch (error) {
+      console.warn('Failed to load another no reason', error);
+      textFill.value = withTiming(0, { duration: 220 });
+      setStatusMessage('Could not load another line right now. Try again.');
     } finally {
       setBusyAction(null);
       anotherInFlight.current = false;
@@ -123,8 +144,14 @@ export default function PocketNoHomeScreen() {
     setBusyAction('loading');
 
     try {
-      const [nextReason] = await Promise.all([fetchFreshNoReason(), waitForTransitionBeat()]);
-      React.startTransition(() => setReason(nextReason));
+      const [nextReasonResult] = await Promise.all([
+        fetchFreshNoReason(),
+        waitForTransitionBeat(),
+      ]);
+      applyReasonResult(nextReasonResult);
+    } catch (error) {
+      console.warn('Failed to load initial no reason', error);
+      setStatusMessage('Could not load a fresh no right now.');
     } finally {
       setBusyAction(null);
     }
@@ -136,11 +163,15 @@ export default function PocketNoHomeScreen() {
     textFill.value = withTiming(1, { duration: 380 });
 
     try {
-      const nextReason = await fetchFreshNoReason();
-      React.startTransition(() => setReason(nextReason));
+      const nextReasonResult = await fetchFreshNoReason();
+      applyReasonResult(nextReasonResult);
       textFill.value = withTiming(0, { duration: 420 });
-      await copyNoReasonToClipboard(nextReason);
+      await copyNoReasonToClipboard(nextReasonResult.reason);
       flashCopied();
+    } catch (error) {
+      console.warn('Failed quick copy from home screen', error);
+      textFill.value = withTiming(0, { duration: 220 });
+      setStatusMessage('Could not copy a fresh no right now.');
     } finally {
       setBusyAction(null);
     }
@@ -168,6 +199,7 @@ export default function PocketNoHomeScreen() {
       <View className="flex-1 pt-safe">
         <ReasonCard
           reason={reason}
+          footer={statusMessage ?? undefined}
           isLoading={busyAction === 'loading' && reason === null}
           loadingLabel="Loading your next excuse..."
           copyDisabled={busyAction !== null || showCopySuccess}
@@ -181,7 +213,13 @@ export default function PocketNoHomeScreen() {
         />
       </View>
 
-      <AmbientBackground textCy={textCy} textRy={textRy} textRx={textRx} textFill={textFill} />
+      <AmbientBackground
+        isScreenActive={isFocused}
+        textCy={textCy}
+        textRy={textRy}
+        textRx={textRx}
+        textFill={textFill}
+      />
 
       <View
         className="mx-5 mb-safe-offset-4 rounded-[28px] border border-outline bg-warm-surface px-3.5 pt-3.5 pb-2.5"
