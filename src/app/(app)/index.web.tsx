@@ -1,11 +1,11 @@
-import { Stack } from 'expo-router';
-import React from 'react';
-import { ScrollView, useWindowDimensions } from 'react-native';
+import { Stack } from "expo-router";
+import React from "react";
+import { ScrollView, useWindowDimensions } from "react-native";
 
-import { DemoSection } from '@/components/landing/demo-section';
-import { FeaturesSection } from '@/components/landing/features-section';
-import { FooterSection } from '@/components/landing/footer-section';
-import { HeroSection } from '@/components/landing/hero-section';
+import { DemoSection } from "@/components/landing/demo-section";
+import { FeaturesSection } from "@/components/landing/features-section";
+import { FooterSection } from "@/components/landing/footer-section";
+import { HeroSection } from "@/components/landing/hero-section";
 
 export default function LandingPage() {
   const { width } = useWindowDimensions();
@@ -13,7 +13,7 @@ export default function LandingPage() {
 
   return (
     <ScrollView className="flex-1 bg-paper">
-      <Stack.Screen options={{ headerShown: false, title: 'Pocket No' }} />
+      <Stack.Screen options={{ headerShown: false, title: "Pocket No" }} />
       <HeroSection isDesktop={isDesktop} />
       <DemoSection isDesktop={isDesktop} />
       <FeaturesSection isDesktop={isDesktop} />
