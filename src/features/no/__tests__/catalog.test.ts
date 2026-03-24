@@ -1,5 +1,5 @@
 import { createNoReason, DEFAULT_NO_REASON, getRandomNoReason } from '../catalog';
-import { NO_REASON_SOURCE, REMOTE_NO_REASON_SOURCE } from '../contracts';
+import { JSON_CATALOG_NO_REASON_SOURCE, NO_REASON_SOURCE } from '../contracts';
 
 describe('createNoReason', () => {
   it('returns a NoReason with default source', () => {
@@ -17,10 +17,10 @@ describe('createNoReason', () => {
     const result = createNoReason({
       id: 'test-2',
       text: 'Not today',
-      source: REMOTE_NO_REASON_SOURCE,
+      source: JSON_CATALOG_NO_REASON_SOURCE,
     });
 
-    expect(result.source).toBe(REMOTE_NO_REASON_SOURCE);
+    expect(result.source).toBe(JSON_CATALOG_NO_REASON_SOURCE);
   });
 });
 

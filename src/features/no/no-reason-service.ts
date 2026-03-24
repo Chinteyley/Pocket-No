@@ -2,7 +2,10 @@ import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 
 import type { NoReason } from './contracts';
-import { fetchFreshNoReason as fetchFreshNoReasonFromApi } from './no-reason-api';
+import {
+  fetchFreshNoReason as fetchFreshNoReasonFromApi,
+  type FetchFreshNoReasonResult,
+} from './no-reason-api';
 
 async function playSuccessHaptic() {
   if (process.env.EXPO_OS === 'web') {
@@ -21,7 +24,7 @@ async function copyReason(reason: NoReason) {
   await playSuccessHaptic();
 }
 
-export async function fetchFreshNoReason() {
+export async function fetchFreshNoReason(): Promise<FetchFreshNoReasonResult> {
   return fetchFreshNoReasonFromApi();
 }
 

@@ -22,9 +22,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Gotchas
 
 - **Custom dev client required** — `expo-dev-client` is a dependency; native features won't work in Expo Go
-- **`reason.json` is shared between JS and native** — the root file is read by `src/features/no/remote-catalog.ts` (API route) and referenced by the Swift shortcut target. Keep it as a plain JSON array of strings
+- **`reason.json` is shared between JS and native** — the root file is read by `src/features/no/json-catalog.ts` (API route) and referenced by the Swift shortcut target. Keep it as a plain JSON array of strings
 - After changing the config plugin (`plugins/with-screenless-quick-copy.js`) or Swift files in `targets/`, run `expo prebuild` to regenerate native projects
-- `EXPO_PUBLIC_API_URL` defaults to empty string (relative URL) — only works in web/server output mode. On native, API routes are accessed via `EXPO_PUBLIC_SITE_ORIGIN`
+- `EXPO_PUBLIC_SITE_ORIGIN` is the single public origin used for Expo Router web/server output and for native client calls to `/api/no`
 
 ## Conventions
 

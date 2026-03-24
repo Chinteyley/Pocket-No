@@ -50,7 +50,7 @@ The app ships the core screen, a quick-copy route, an API-backed reason feed, an
 
 ## How It Works
 
-`reason.json` is the source catalog for the larger pool of lines. The API route in `src/app/api/no+api.ts` returns a normalized random entry from that file via `src/features/no/remote-catalog.ts`.
+`reason.json` is the source catalog for the larger pool of lines. The API route in `src/app/api/no+api.ts` returns a normalized random entry from that file via `src/features/no/json-catalog.ts`.
 
 UI flows call `fetchFreshNoReason()` from `src/features/no/no-reason-service.ts`. If the API fails, the client falls back to a smaller in-app catalog from `src/features/no/catalog.ts`.
 
@@ -92,7 +92,7 @@ bun run lint
 
 ## Environment
 
-`app.config.ts` reads `EXPO_PUBLIC_SITE_ORIGIN` and passes it into the Expo Router plugin when present. Set it when you need an explicit site origin for web/server output.
+`app.config.ts` reads `EXPO_PUBLIC_SITE_ORIGIN` and passes it into the Expo Router plugin when present. Set it for web/server output and for native builds that need to call the Expo API route from the client.
 
 Example:
 
@@ -130,7 +130,7 @@ Guidelines:
 - `src/app/(app)/copy.tsx`: quick-copy route
 - `src/app/api/no+api.ts`: random reason API
 - `src/features/no/no-reason-service.ts`: clipboard orchestration
-- `src/features/no/remote-catalog.ts`: normalized `reason.json` loader
+- `src/features/no/json-catalog.ts`: normalized `reason.json` loader
 - `src/features/no/deep-links.ts`: route/scheme helpers
 - `plugins/with-screenless-quick-copy.js`: iOS target/resource wiring
 - `targets/pocket-no-shortcuts/copy-no-action.swift`: App Intent copy implementation

@@ -1,7 +1,7 @@
 import reasonLinesJson from '../../../reason.json';
 
 import { createNoReason, getRandomNoReason } from './catalog';
-import { REMOTE_NO_REASON_SOURCE, type NoReason } from './contracts';
+import { JSON_CATALOG_NO_REASON_SOURCE, type NoReason } from './contracts';
 
 function normalizeReasonLines(payload: unknown): string[] {
   if (!Array.isArray(payload)) {
@@ -33,15 +33,15 @@ function normalizeReasonLines(payload: unknown): string[] {
 
 const localReasonLines = normalizeReasonLines(reasonLinesJson);
 
-export async function fetchRemoteNoReason(): Promise<NoReason> {
+export async function fetchJsonCatalogNoReason(): Promise<NoReason> {
   try {
     const index = Math.floor(Math.random() * localReasonLines.length);
     const text = localReasonLines[index] ?? localReasonLines[0];
 
     return createNoReason({
-      id: `remote-catalog-${index + 1}`,
+      id: `json-catalog-${index + 1}`,
       text,
-      source: REMOTE_NO_REASON_SOURCE,
+      source: JSON_CATALOG_NO_REASON_SOURCE,
     });
   } catch (error) {
     console.warn('Failed to load local reason catalog', error);

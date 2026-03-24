@@ -1,5 +1,12 @@
 import React, { useCallback, useRef } from 'react';
-import { Pressable, Text, View, useWindowDimensions } from 'react-native';
+import {
+  Pressable,
+  Text,
+  View,
+  type LayoutChangeEvent,
+  type LayoutRectangle,
+  useWindowDimensions,
+} from 'react-native';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import Animated, {
   FadeIn,
@@ -33,21 +40,30 @@ export function ReasonCard({
   copyState = 'idle',
   onTextMeasure,
 }: ReasonCardProps) {
-  const textContainerRef = useRef<View>(null);
+  const rootLayoutRef = useRef<LayoutRectangle | null>(null);
+  const textLayoutRef = useRef<LayoutRectangle | null>(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const accentColor = useCSSVariable('--color-accent') as string;
 
-  const handleLayout = useCallback(() => {
-    textContainerRef.current?.measure((_x, _y, w, h, _pageX, pageY) => {
-      if (h > 0 && screenHeight > 0) {
-        onTextMeasure?.(
-          (pageY + h / 2) / screenHeight,
-          (h / 2 + 36) / screenHeight,
-          (w / 2 + 64) / screenWidth,
-        );
-      }
-    });
+  const emitTextMetrics = useCallback((rootLayout: LayoutRectangle | null, textLayout: LayoutRectangle | null) => {
+    if (!rootLayout || !textLayout || screenHeight <= 0 || screenWidth <= 0) {
+      return;
+    }
+
+    onTextMeasure?.(
+      (rootLayout.y + textLayout.y + textLayout.height / 2) / screenHeight,
+      (textLayout.height / 2 + 36) / screenHeight,
+      (textLayout.width / 2 + 64) / screenWidth,
+    );
   }, [onTextMeasure, screenHeight, screenWidth]);
+  const handleRootLayout = useCallback((event: LayoutChangeEvent) => {
+    rootLayoutRef.current = event.nativeEvent.layout;
+    emitTextMetrics(rootLayoutRef.current, textLayoutRef.current);
+  }, [emitTextMetrics]);
+  const handleTextLayout = useCallback((event: LayoutChangeEvent) => {
+    textLayoutRef.current = event.nativeEvent.layout;
+    emitTextMetrics(rootLayoutRef.current, textLayoutRef.current);
+  }, [emitTextMetrics]);
   const isPlaceholder = reason === null;
   const displayText = reason?.text ?? loadingLabel;
   const supportsCopyFeedback = !isPlaceholder && (typeof onLongPress === 'function' || copyState === 'success');
@@ -62,7 +78,9 @@ export function ReasonCard({
       : null;
 
   return (
-    <View className="flex-1 items-center justify-center px-8 gap-4">
+    <View
+      className="flex-1 items-center justify-center px-8 gap-4"
+      onLayout={handleRootLayout}>
       {eyebrow ? (
         <Text
           selectable
@@ -72,8 +90,7 @@ export function ReasonCard({
       ) : null}
 
       <View
-        ref={textContainerRef}
-        onLayout={handleLayout}
+        onLayout={handleTextLayout}
         className="relative items-center justify-center">
         {copyIndicator ? (
           <Animated.View
