@@ -1,0 +1,52 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="paper" x1="72" y1="54" x2="1124" y2="590" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF7EF" />
+      <stop offset="1" stop-color="#FDE8D8" />
+    </linearGradient>
+    <linearGradient id="accent" x1="846" y1="102" x2="1102" y2="326" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E86C2F" />
+      <stop offset="1" stop-color="#F4A261" />
+    </linearGradient>
+    <filter id="shadow" x="556" y="180" width="568" height="292" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix" />
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
+      <feOffset dy="18" />
+      <feGaussianBlur stdDeviation="22" />
+      <feColorMatrix type="matrix" values="0 0 0 0 0.0902 0 0 0 0 0.0588 0 0 0 0 0.0353 0 0 0 0.12 0" />
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_2" />
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_2" result="shape" />
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#paper)" />
+  <circle cx="1088" cy="106" r="120" fill="url(#accent)" fill-opacity="0.18" />
+  <circle cx="1042" cy="544" r="164" fill="#FFFFFF" fill-opacity="0.52" />
+  <path d="M0 566C144 522 292 520 454 552C624 586 828 618 1200 536V630H0V566Z" fill="#FFFFFF" fill-opacity="0.52" />
+
+  <rect x="72" y="72" width="196" height="42" rx="21" fill="#FFFFFF" fill-opacity="0.78" />
+  <g transform="translate(84 79) scale(0.025390625)">
+    <path fill="#171717" d="M 300 289 C 300 258.072021 325.071991 233 356 233 L 668 233 C 698.927979 233 724 258.072021 724 289 L 724 655 C 724 679.312012 710.14801 701.5 688.286011 712.200012 L 536.286011 786.599976 C 520.961792 794.090942 503.038208 794.090942 487.713989 786.599976 L 335.713989 712.200012 C 313.85199 701.5 300 679.312012 300 655 Z" />
+    <path fill="#FFFFFF" d="M 361 352 L 663 352 C 667.970581 352 672 356.029419 672 361 C 672 365.970581 667.970581 370 663 370 L 361 370 C 356.029449 370 352 365.970581 352 361 C 352 356.029419 356.029449 352 361 352 Z" />
+    <path fill="#FFFFFF" d="M 426 475 C 435.372986 465.627014 450.627014 465.627014 460 475 L 512 527 L 564 475 C 573.372986 465.627014 588.627014 465.627014 598 475 C 607.372986 484.372986 607.372986 499.627014 598 509 L 546 561 L 598 613 C 607.372986 622.372986 607.372986 637.627014 598 647 C 588.627014 656.372986 573.372986 656.372986 564 647 L 512 595 L 460 647 C 450.627014 656.372986 435.372986 656.372986 426 647 C 416.627014 637.627014 416.627014 622.372986 426 613 L 478 561 L 426 509 C 416.627014 499.627014 416.627014 484.372986 426 475 Z" />
+  </g>
+  <text x="124" y="99" fill="#E86C2F" font-family="Helvetica, Arial, sans-serif" font-size="20" font-weight="700" letter-spacing="0.08em">POCKET NO</text>
+
+  <text x="72" y="214" fill="#111111" font-family="Georgia, 'Times New Roman', serif" font-size="84" font-weight="400" letter-spacing="-0.05em">The art</text>
+  <text x="72" y="300" fill="#111111" font-family="Georgia, 'Times New Roman', serif" font-size="84" font-weight="400" letter-spacing="-0.05em">of saying no.</text>
+
+  <text x="72" y="370" fill="#555555" font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="500">Witty excuses, one tap away.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="602" y="196" width="476" height="228" rx="28" fill="#FFFFFF" />
+    <rect x="602" y="196" width="476" height="228" rx="28" stroke="#111111" stroke-opacity="0.08" />
+  </g>
+
+  <text x="648" y="248" fill="#E86C2F" font-family="Helvetica, Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="0.1em">SAMPLE NO</text>
+  <text x="648" y="314" fill="#111111" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="600">
+    <tspan x="648" dy="0">I already have plans tonight,</tspan>
+    <tspan x="648" dy="40">but thank you</tspan>
+    <tspan x="648" dy="40">for thinking of me.</tspan>
+  </text>
+  <text x="648" y="462" fill="#555555" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="500">Polite, sharp, and ready when you need it.</text>
+</svg>

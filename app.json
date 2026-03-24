@@ -26,7 +26,10 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "server"
+      "output": "server",
+      "name": "Pocket No",
+      "shortName": "Pocket No",
+      "description": "Witty excuses to say no, one tap away."
     },
     "plugins": [
       "expo-router",

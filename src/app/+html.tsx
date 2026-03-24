@@ -2,6 +2,10 @@ import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
 export default function Root({ children }: PropsWithChildren) {
+  const siteOrigin = process.env.EXPO_PUBLIC_SITE_ORIGIN?.trim().replace(/\/$/, '') ?? '';
+  const description = 'Witty excuses to say no, one tap away.';
+  const ogImageUrl = siteOrigin ? `${siteOrigin}/og-pocket-no.png` : '/og-pocket-no.png';
+
   return (
     <html lang="en">
       <head>
@@ -13,18 +17,27 @@ export default function Root({ children }: PropsWithChildren) {
         />
         <meta name="theme-color" content="#fff7ef" />
         <title>Pocket No</title>
+        <meta name="application-name" content="Pocket No" />
+        <meta name="apple-mobile-web-app-title" content="Pocket No" />
+        <meta name="description" content={description} />
 
         <meta property="og:title" content="Pocket No" />
-        <meta
-          property="og:description"
-          content="Witty excuses to say no, one tap away."
-        />
+        <meta property="og:site_name" content="Pocket No" />
+        <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="Pocket No" />
+        <meta property="og:url" content={siteOrigin || 'https://pocket-no.ctey.dev'} />
+        <meta property="og:image" content={ogImageUrl} />
         <meta
-          name="twitter:description"
-          content="Witty excuses to say no, one tap away."
+          property="og:image:alt"
+          content="Pocket No social card with the tagline The art of saying no."
+        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Pocket No" />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImageUrl} />
+        <meta
+          name="twitter:image:alt"
+          content="Pocket No social card with the tagline The art of saying no."
         />
 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
