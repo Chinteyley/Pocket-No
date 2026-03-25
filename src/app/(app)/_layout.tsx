@@ -41,6 +41,10 @@ function WebAppLayout() {
             contentStyle: { backgroundColor: "transparent" },
           }}
         />
+        <Stack.Screen
+          name="privacy"
+          options={{ title: "Privacy Policy" }}
+        />
       </Stack>
     </>
   );
@@ -103,6 +107,10 @@ function NativeAppLayout() {
             headerShown: false,
             contentStyle: { backgroundColor: "transparent" },
           }}
+        />
+        <Stack.Screen
+          name="privacy"
+          options={{ title: "Privacy Policy" }}
         />
       </Stack>
     </>
