@@ -89,12 +89,13 @@ export function ActionButton({
   const successPalette = {
     backgroundColor: accentColor,
     borderColor: accentColor,
-    textColor: '#ffffff',
-    iconTint: '#ffffff',
-    hintColor: 'rgba(255, 255, 255, 0.8)',
+    textColor: basePalette.textColor,
+    iconTint: basePalette.iconTint,
+    hintColor: basePalette.hintColor,
   };
   const effectiveLoadingPalette = loadingPalette ?? basePalette;
   const palette = success ? successPalette : loading ? effectiveLoadingPalette : basePalette;
+  const shouldDimForDisabled = disabled && !success;
   const visibleLabel = success ? successLabel : label;
   const resolvedLabel = loadingLabel && loading ? loadingLabel : visibleLabel;
   const visibleIcon = success ? successIcon : loading ? (loadingIcon ?? icon) : icon;
@@ -161,7 +162,7 @@ export function ActionButton({
       className={fill ? 'flex-1' : 'w-full'}
       style={({ pressed }) => ({
         borderRadius: hasHint ? 24 : 20,
-        opacity: disabled ? 0.6 : 1,
+        opacity: shouldDimForDisabled ? 0.6 : 1,
         transform: [{ scale: pressed && !disabled ? 0.97 : 1 }],
       })}>
       <Animated.View
