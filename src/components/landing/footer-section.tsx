@@ -1,3 +1,4 @@
+import { Link } from "expo-router";
 import { Linking, Pressable, Text, View } from "react-native";
 
 import { cn } from "@/lib/cn";
@@ -65,7 +66,26 @@ export function FooterSection({ isDesktop }: FooterSectionProps) {
         </Pressable>
 
         <View className="mt-16 w-full items-center border-t border-outline pt-6">
-          <Text className="text-[13px] text-muted" style={FONT_BODY}>
+          <Link href="/privacy" asChild>
+            <Pressable
+              accessibilityRole="link"
+              className="rounded-full px-3 py-2"
+              style={({ pressed, hovered }) => ({
+                opacity: pressed ? 0.7 : 1,
+                transform: hovered ? "translateY(-1px)" : "translateY(0)",
+                transition: `opacity 160ms ${EASE_OUT}, transform 160ms ${EASE_OUT}`,
+              })}
+            >
+              <Text
+                className="text-[14px] text-subtle-ink underline"
+                style={FONT_BODY}
+              >
+                Privacy Policy
+              </Text>
+            </Pressable>
+          </Link>
+
+          <Text className="mt-3 text-[13px] text-muted" style={FONT_BODY}>
             {"\u00A9"} {new Date().getFullYear()} Pocket No. MIT License.
           </Text>
         </View>
