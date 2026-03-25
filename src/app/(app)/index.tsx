@@ -3,7 +3,7 @@ import * as QuickActions from 'expo-quick-actions';
 import { useIsFocused } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import React from 'react';
-import { View } from 'react-native';
+import { View, useColorScheme } from 'react-native';
 import { useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 
 import { ActionButton } from '@/components/no/action-button';
@@ -23,6 +23,7 @@ const HOME_COPY_BUTTON_PROGRESS_DELAY_MS = 180;
 
 export default function PocketNoHomeScreen() {
   const isFocused = useIsFocused();
+  const colorScheme = useColorScheme();
   const inkColor = useCSSVariable('--color-ink') as string;
   const accentColor = useCSSVariable('--color-accent') as string;
   const subtleInkColor = useCSSVariable('--color-subtle-ink') as string;
@@ -40,6 +41,7 @@ export default function PocketNoHomeScreen() {
   const copySuccessTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const copyInFlight = React.useRef(false);
   const anotherInFlight = React.useRef(false);
+  const copiedReasonTextColor = showCopySuccess && colorScheme === 'dark' ? '#ffffff' : inkColor;
 
   const clearCopySuccessTimer = () => {
     if (copySuccessTimeoutRef.current) {
@@ -204,6 +206,7 @@ export default function PocketNoHomeScreen() {
           loadingLabel="Loading your next excuse..."
           copyDisabled={busyAction !== null || showCopySuccess}
           copyState={showCopySuccess ? 'success' : 'idle'}
+          copiedTextColor={copiedReasonTextColor}
           onLongPress={reason ? () => void handleCopy() : undefined}
           onTextMeasure={(cy, ry, rx) => {
             textCy.value = withSpring(cy, { damping: 18, stiffness: 80 });

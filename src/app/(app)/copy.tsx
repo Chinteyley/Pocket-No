@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { PlatformColor, View } from 'react-native';
+import { View, useColorScheme } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -32,12 +32,8 @@ function CopyScreenContent({
   entry: NoCopyEntry;
   launchId: string;
 }) {
+  const colorScheme = useColorScheme();
   const inkColor = useCSSVariable('--color-ink') as string;
-  const subtleInkColor = useCSSVariable('--color-subtle-ink') as string;
-  const sheetTextColors = {
-    primary: process.env.EXPO_OS === 'ios' ? PlatformColor('label') : inkColor,
-    secondary: process.env.EXPO_OS === 'ios' ? PlatformColor('secondaryLabel') : subtleInkColor,
-  };
   const insets = useSafeAreaInsets();
   const [reason, setReason] = React.useState<NoReason | null>(null);
   const [state, setState] = React.useState<CopyFlowState>('loading');
@@ -108,6 +104,7 @@ function CopyScreenContent({
   });
 
   const showCopySuccess = state === 'copied';
+  const copiedReasonTextColor = showCopySuccess && colorScheme === 'dark' ? '#ffffff' : inkColor;
   const statusLabel = state === 'error' ? 'Could not copy a fresh no' : null;
   const displayText =
     state === 'error'
@@ -138,7 +135,12 @@ function CopyScreenContent({
               entering={FadeInDown.duration(200)}
               selectable
               className="text-[31px] leading-[39px] font-extrabold tracking-[-1.1px]"
-              style={{ color: sheetTextColors.primary }}>
+              style={{
+                color: copiedReasonTextColor,
+                textShadowColor: showCopySuccess ? 'rgba(232, 108, 47, 0.34)' : 'transparent',
+                textShadowOffset: { width: 0, height: 6 },
+                textShadowRadius: showCopySuccess ? 20 : 0,
+              }}>
               {displayText}
             </Animated.Text>
           </View>
