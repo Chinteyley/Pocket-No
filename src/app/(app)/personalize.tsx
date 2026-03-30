@@ -46,7 +46,7 @@ export default function PersonalizeScreen() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : 'Could not generate a personalized no right now.'
+          : 'Could not personalize. Try again.'
       );
     } finally {
       setBusy(false);
@@ -61,11 +61,11 @@ export default function PersonalizeScreen() {
     !busy &&
     isAvailable === true &&
     normalizePersonalizationInput(inputValue).length > 0;
-  const noteMessage =
+  const availabilityError =
     isAvailable === false
-      ? 'Apple Intelligence is not available right now on this device.'
+      ? 'Not available on this device.'
       : isAvailable === null
-        ? 'Checking Apple Intelligence availability…'
+        ? 'Checking availability…'
         : null;
 
   return (
@@ -85,10 +85,9 @@ export default function PersonalizeScreen() {
         }}>
         <PersonalizeComposer
           autoFocus
-          errorMessage={errorMessage}
+          errorMessage={availabilityError ?? errorMessage}
           inputRef={inputRef}
           maxLength={PERSONALIZATION_INPUT_MAX_LENGTH}
-          noteMessage={noteMessage}
           onChangeText={(nextValue) => {
             setInputValue(nextValue);
             if (errorMessage) {

@@ -4,18 +4,23 @@ import { z } from 'zod';
 import { createNoReason } from './catalog';
 import { APPLE_PERSONALIZED_NO_REASON_SOURCE, type NoReason } from './contracts';
 
+type AppleVoiceTranscriptionModel = ReturnType<
+  (typeof import('@react-native-ai/apple'))['apple']['transcriptionModel']
+>;
+
 const personalizedReasonSchema = z.object({
   reason: z.string().trim().min(1).max(180),
 });
 
-const PERSONALIZATION_SYSTEM_PROMPT = `You write Pocket-No lines.
+const PERSONALIZATION_SYSTEM_PROMPT = `You write Pocket-No lines — short, punchy ways to say no or decline.
 
-Return exactly one original line that sounds sharp, human, and copy-ready.
+The user gives you context about what they need to say no to. You return exactly one original line that declines, refuses, or sets a boundary. The line must sound sharp, human, and copy-ready.
 Keep it under 140 characters.
 Do not use emojis, hashtags, or lists.
 Do not explain yourself.
 Do not mention Apple Intelligence, AI, or personalization.
-Make the line feel lightly witty, not corny.`;
+Make the line feel lightly witty, not corny.
+Always say no. Never agree, greet, or say yes.`;
 
 function createPersonalizationUnavailableError() {
   return new Error('Apple Intelligence is not available on this device.');
@@ -24,6 +29,14 @@ function createPersonalizationUnavailableError() {
 function createVoicePersonalizationUnavailableError() {
   return new Error('Voice personalization is not available on this device.');
 }
+
+let preparedVoiceTranscriptionModelPromise: Promise<AppleVoiceTranscriptionModel> | null = null;
+
+export const applePersonalizationDependencies = {
+  loadAiModule: () => import('ai'),
+  loadAppleModule: () => import('@react-native-ai/apple'),
+  loadExpoFileSystemModule: () => import('expo-file-system'),
+};
 
 export function normalizePersonalizationInput(value: string) {
   return value.trim().replace(/\s+/g, ' ');
@@ -51,13 +64,34 @@ export function normalizeGeneratedPersonalizedReason(value: string) {
   return normalizedValue;
 }
 
+async function getPreparedAppleVoiceTranscriptionModel() {
+  const { apple } = await applePersonalizationDependencies.loadAppleModule();
+
+  if (!apple.isAvailable()) {
+    throw createVoicePersonalizationUnavailableError();
+  }
+
+  if (!preparedVoiceTranscriptionModelPromise) {
+    preparedVoiceTranscriptionModelPromise = (async () => {
+      const model = apple.transcriptionModel();
+      await model.prepare();
+      return model;
+    })().catch((error) => {
+      preparedVoiceTranscriptionModelPromise = null;
+      throw error;
+    });
+  }
+
+  return preparedVoiceTranscriptionModelPromise;
+}
+
 export async function isApplePersonalizationAvailable() {
   if (Platform.OS !== 'ios') {
     return false;
   }
 
   try {
-    const { apple } = await import('@react-native-ai/apple');
+    const { apple } = await applePersonalizationDependencies.loadAppleModule();
     return apple.isAvailable();
   } catch (error) {
     console.warn('Failed to check Apple Intelligence availability', error);
@@ -71,13 +105,7 @@ export async function isAppleVoicePersonalizationAvailable() {
   }
 
   try {
-    const { apple } = await import('@react-native-ai/apple');
-
-    if (!apple.isAvailable()) {
-      return false;
-    }
-
-    await apple.transcriptionModel().prepare();
+    await getPreparedAppleVoiceTranscriptionModel();
     return true;
   } catch (error) {
     console.warn('Failed to check Apple voice personalization availability', error);
@@ -90,19 +118,15 @@ export async function transcribePersonalizationAudioFile(fileUri: string) {
     throw createVoicePersonalizationUnavailableError();
   }
 
-  const [{ apple }, { experimental_transcribe: transcribe }, { File }] = await Promise.all([
-    import('@react-native-ai/apple'),
-    import('ai'),
-    import('expo-file-system'),
+  const [{ experimental_transcribe: transcribe }, { File }] = await Promise.all([
+    applePersonalizationDependencies.loadAiModule(),
+    applePersonalizationDependencies.loadExpoFileSystemModule(),
   ]);
-
-  if (!apple.isAvailable()) {
-    throw createVoicePersonalizationUnavailableError();
-  }
+  const model = await getPreparedAppleVoiceTranscriptionModel();
 
   const audioFile = new File(fileUri);
   const transcript = await transcribe({
-    model: apple.transcriptionModel(),
+    model,
     audio: await audioFile.arrayBuffer(),
   });
 
@@ -128,8 +152,8 @@ export async function generatePersonalizedNo(input: string): Promise<NoReason> {
   }
 
   const [{ apple }, { generateObject }] = await Promise.all([
-    import('@react-native-ai/apple'),
-    import('ai'),
+    applePersonalizationDependencies.loadAppleModule(),
+    applePersonalizationDependencies.loadAiModule(),
   ]);
 
   if (!apple.isAvailable()) {

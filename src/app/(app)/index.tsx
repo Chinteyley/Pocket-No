@@ -4,12 +4,11 @@ import * as Haptics from 'expo-haptics';
 import * as QuickActions from 'expo-quick-actions';
 import { Stack } from 'expo-router';
 import React from 'react';
-import { Pressable, Text, TextInput, View, useColorScheme } from 'react-native';
+import { Pressable, TextInput, View, useColorScheme } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  cancelAnimation,
   Easing,
-  FadeIn,
-  FadeOut,
   interpolate,
   interpolateColor,
   runOnJS,
@@ -42,6 +41,7 @@ import {
 } from '@/features/no/personalized-reason-store';
 import { copyNoReasonToClipboard, fetchFreshNoReason } from '@/features/no/no-reason-service';
 import { useMountEffect } from '@/hooks/useMountEffect';
+import { resetKeyboardOffset, setKeyboardOffsetY } from '../../../modules/keyboard-dismiss';
 
 const HOME_REASON_TRANSITION_DELAY_MS = 240;
 const HOME_NEW_BUTTON_PROGRESS_DELAY_MS = 450;
@@ -51,6 +51,10 @@ const HOME_PERSONALIZE_DRAG_VELOCITY_THRESHOLD = -820;
 const HOME_PERSONALIZE_PULL_LIMIT = 72;
 const HOME_COMPOSER_MAX_LENGTH = 140;
 const HOME_COMPOSER_FOCUS_DELAY_MS = 140;
+const HOME_COMPOSER_DISMISS_DRAG_THRESHOLD = 80;
+const HOME_COMPOSER_DISMISS_VELOCITY_THRESHOLD = 800;
+const HOME_COMPOSER_CLOSE_DURATION_MS = 180;
+const HOME_KEYBOARD_RESET_FALLBACK_DELAY_MS = 320;
 
 function formatRecordingDuration(durationMillis: number) {
   const totalSeconds = Math.max(0, Math.floor(durationMillis / 1000));
@@ -73,6 +77,8 @@ export default function PocketNoHomeScreen() {
   const actionTrayLift = useSharedValue(0);
   const actionTrayDragDistance = useSharedValue(0);
   const composerProgress = useSharedValue(0);
+  const composerDragY = useSharedValue(0);
+  const composerDismissing = useSharedValue(false);
   const keyboard = useAnimatedKeyboard();
   const textCy = useSharedValue(0.44);
   const textRy = useSharedValue(0.1);
@@ -82,6 +88,9 @@ export default function PocketNoHomeScreen() {
   const recorderState = useAudioRecorderState(audioRecorder);
   const inputRef = React.useRef<TextInput>(null);
   const copySuccessTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const composerFocusTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const keyboardResetTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const composerDismissInFlightRef = React.useRef(false);
   const copyInFlight = React.useRef(false);
   const anotherInFlight = React.useRef(false);
   const [reason, setReason] = React.useState<NoReason | null>(null);
@@ -96,6 +105,7 @@ export default function PocketNoHomeScreen() {
     'idle' | 'recording' | 'transcribing' | 'submitting'
   >('idle');
   const [composerErrorMessage, setComposerErrorMessage] = React.useState<string | null>(null);
+  const [composerVoiceError, setComposerVoiceError] = React.useState<string | null>(null);
   const personalizedReason = React.useSyncExternalStore(
     subscribeToPersonalizedNoReason,
     getPersonalizedNoReasonSnapshot
@@ -115,6 +125,20 @@ export default function PocketNoHomeScreen() {
     if (copySuccessTimeoutRef.current) {
       clearTimeout(copySuccessTimeoutRef.current);
       copySuccessTimeoutRef.current = null;
+    }
+  };
+
+  const clearComposerFocusTimer = () => {
+    if (composerFocusTimeoutRef.current) {
+      clearTimeout(composerFocusTimeoutRef.current);
+      composerFocusTimeoutRef.current = null;
+    }
+  };
+
+  const clearKeyboardResetTimer = () => {
+    if (keyboardResetTimeoutRef.current) {
+      clearTimeout(keyboardResetTimeoutRef.current);
+      keyboardResetTimeoutRef.current = null;
     }
   };
 
@@ -168,17 +192,63 @@ export default function PocketNoHomeScreen() {
   });
 
   const focusComposerInput = React.useEffectEvent(() => {
-    setTimeout(() => {
+    clearComposerFocusTimer();
+    composerFocusTimeoutRef.current = setTimeout(() => {
+      composerFocusTimeoutRef.current = null;
       inputRef.current?.focus();
     }, HOME_COMPOSER_FOCUS_DELAY_MS);
   });
 
-  const finishComposerClose = React.useEffectEvent(() => {
-    setIsComposerMounted(false);
-    setComposerMode('idle');
+  const blurComposerInput = React.useEffectEvent(() => {
+    clearComposerFocusTimer();
+    inputRef.current?.blur();
   });
 
-  const closeComposer = React.useEffectEvent(async (options?: { clearDraft?: boolean }) => {
+  const scheduleKeyboardOffsetReset = React.useEffectEvent((delayMs: number) => {
+    clearKeyboardResetTimer();
+
+    if (delayMs <= 0) {
+      resetKeyboardOffset();
+      return;
+    }
+
+    keyboardResetTimeoutRef.current = setTimeout(() => {
+      keyboardResetTimeoutRef.current = null;
+      resetKeyboardOffset();
+    }, delayMs);
+  });
+
+  const finishComposerDismiss = React.useEffectEvent((
+    clearDraft: boolean,
+    shouldDelayKeyboardReset: boolean
+  ) => {
+    setIsComposerMounted(false);
+    setComposerMode('idle');
+    composerDragY.value = 0;
+    composerDismissing.value = false;
+    composerDismissInFlightRef.current = false;
+
+    if (clearDraft) {
+      setComposerText('');
+    }
+
+    scheduleKeyboardOffsetReset(
+      shouldDelayKeyboardReset ? HOME_KEYBOARD_RESET_FALLBACK_DELAY_MS : 0
+    );
+  });
+
+  const resetDismissState = React.useEffectEvent(() => {
+    composerDismissing.value = false;
+    composerDismissInFlightRef.current = false;
+  });
+
+  const requestComposerDismiss = React.useEffectEvent(async (options?: { clearDraft?: boolean }) => {
+    if (!isComposerMounted || composerDismissInFlightRef.current) {
+      return;
+    }
+
+    composerDismissInFlightRef.current = true;
+
     if (recorderState.isRecording) {
       try {
         await audioRecorder.stop();
@@ -187,12 +257,8 @@ export default function PocketNoHomeScreen() {
       }
     }
 
-    inputRef.current?.blur();
     setComposerErrorMessage(null);
-
-    if (options?.clearDraft) {
-      setComposerText('');
-    }
+    setComposerVoiceError(null);
 
     if (process.env.EXPO_OS !== 'web') {
       try {
@@ -202,15 +268,24 @@ export default function PocketNoHomeScreen() {
       }
     }
 
+    const shouldDelayKeyboardReset =
+      process.env.EXPO_OS === 'ios' && keyboard.height.value > insets.bottom + 1;
+
+    blurComposerInput();
     composerProgress.value = withTiming(
       0,
       {
-        duration: 180,
+        duration: HOME_COMPOSER_CLOSE_DURATION_MS,
         easing: Easing.bezier(0.23, 1, 0.32, 1),
       },
       (finished) => {
         if (finished) {
-          runOnJS(finishComposerClose)();
+          runOnJS(finishComposerDismiss)(
+            options?.clearDraft ?? false,
+            shouldDelayKeyboardReset
+          );
+        } else {
+          runOnJS(resetDismissState)();
         }
       }
     );
@@ -221,14 +296,20 @@ export default function PocketNoHomeScreen() {
       return;
     }
 
+    clearKeyboardResetTimer();
+    resetKeyboardOffset();
     hideCopySuccess();
     setStatusMessage(null);
     setComposerErrorMessage(null);
+    setComposerVoiceError(null);
     setComposerMode('idle');
+    composerDismissInFlightRef.current = false;
+    composerDismissing.value = false;
+    composerDragY.value = 0;
     setIsComposerMounted(true);
     composerProgress.value = withTiming(1, {
-      duration: 240,
-      easing: Easing.bezier(0.23, 1, 0.32, 1),
+      duration: 260,
+      easing: Easing.bezier(0.16, 1, 0.3, 1),
     });
     void focusComposerInput();
   });
@@ -345,13 +426,13 @@ export default function PocketNoHomeScreen() {
       if (process.env.EXPO_OS === 'ios') {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
-      void closeComposer({ clearDraft: true });
+      void requestComposerDismiss({ clearDraft: true });
     } catch (error) {
       console.warn('Failed to generate personalized no reason from text input', error);
       setComposerErrorMessage(
         error instanceof Error
           ? error.message
-          : 'Could not generate a personalized no right now.'
+          : 'Could not personalize. Try again.'
       );
       setComposerMode('idle');
     }
@@ -365,6 +446,7 @@ export default function PocketNoHomeScreen() {
     if (recorderState.isRecording) {
       setComposerMode('transcribing');
       setComposerErrorMessage(null);
+      setComposerVoiceError(null);
 
       try {
         await audioRecorder.stop();
@@ -384,36 +466,24 @@ export default function PocketNoHomeScreen() {
           await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
 
-        void closeComposer({ clearDraft: true });
+        void requestComposerDismiss({ clearDraft: true });
       } catch (error) {
         console.warn('Failed to generate personalized no reason from voice input', error);
-        setComposerErrorMessage(
-          error instanceof Error
-            ? error.message
-            : 'Could not generate a personalized no from that recording.'
-        );
+        setComposerVoiceError("Couldn't hear that");
         setComposerMode('idle');
       }
       return;
     }
 
-    if (isVoiceAvailable !== true) {
-      setComposerErrorMessage(
-        isVoiceAvailable === false
-          ? 'Voice personalization is not available on this device.'
-          : 'Still checking voice support. Try again in a moment.'
-      );
-      return;
-    }
-
     inputRef.current?.blur();
     setComposerErrorMessage(null);
+    setComposerVoiceError(null);
     setComposerMode('recording');
 
     try {
       const permission = await AudioModule.requestRecordingPermissionsAsync();
       if (!permission.granted) {
-        throw new Error('Allow microphone access to talk through your personalized no.');
+        throw new Error('Allow microphone access to use voice.');
       }
 
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
@@ -431,7 +501,7 @@ export default function PocketNoHomeScreen() {
         console.warn('Failed to reset audio mode after recording start error', audioModeError);
       }
       setComposerErrorMessage(
-        error instanceof Error ? error.message : 'Could not start voice recording right now.'
+        error instanceof Error ? error.message : 'Could not start recording.'
       );
       setComposerMode('idle');
     }
@@ -449,6 +519,9 @@ export default function PocketNoHomeScreen() {
 
     return () => {
       clearCopySuccessTimer();
+      clearComposerFocusTimer();
+      clearKeyboardResetTimer();
+      resetKeyboardOffset();
       subscription.remove();
     };
   });
@@ -503,26 +576,26 @@ export default function PocketNoHomeScreen() {
     ],
   }));
 
-  const composerBackdropStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(composerProgress.value, [0, 1], [0, 1]),
-  }));
+  const composerBackdropStyle = useAnimatedStyle(() => {
+    const dragFade = interpolate(composerDragY.value, [0, 120], [1, 0.3], 'clamp');
+    return {
+      opacity: interpolate(composerProgress.value, [0, 1], [0, 1]) * dragFade,
+    };
+  });
 
-  const composerOrbStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(composerProgress.value, [0, 0.14, 0.56, 1], [0, 1, 0.16, 0]),
-    transform: [
-      { translateY: interpolate(composerProgress.value, [0, 1], [10, -18]) },
-      { scale: interpolate(composerProgress.value, [0, 0.4, 1], [0.76, 1.06, 0.82]) },
-    ],
-  }));
 
-  const composerPanelStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(composerProgress.value, [0, 0.2, 1], [0, 0.35, 1]),
-    transform: [
-      { translateY: interpolate(composerProgress.value, [0, 1], [34, 0]) },
-      { scaleX: interpolate(composerProgress.value, [0, 1], [0.22, 1]) },
-      { scaleY: interpolate(composerProgress.value, [0, 1], [0.24, 1]) },
-    ],
-  }));
+  const composerPanelStyle = useAnimatedStyle(() => {
+    const progress = composerProgress.value;
+    const dragOffset = composerDragY.value;
+
+    return {
+      opacity: interpolate(progress, [0, 0.4, 1], [0, 0.6, 1]),
+      transform: [
+        { translateY: interpolate(progress, [0, 1], [14, 0]) + dragOffset },
+        { scale: interpolate(progress, [0, 1], [0.95, 1]) },
+      ],
+    };
+  });
 
   const actionTrayPan = Gesture.Pan()
     .enabled(canOpenPersonalize && !isComposerMounted)
@@ -555,51 +628,70 @@ export default function PocketNoHomeScreen() {
       actionTrayLift.value = withSpring(0, { damping: 20, stiffness: 240 });
     });
 
-  const composerNoteMessage =
-    composerMode === 'recording'
-      ? `Listening… tap again when you’re done. ${recordingDurationLabel}`
-      : composerMode === 'transcribing'
-        ? 'Turning your voice into text…'
-        : composerMode === 'submitting'
-          ? 'Writing your personalized no…'
-          : isVoiceAvailable === null
-            ? 'Checking voice support…'
-            : isVoiceAvailable === false
-              ? 'Voice is not available here yet, but typing still works.'
-              : 'Talk it out or type a few words. Either way stays on-device.';
+  const composerPanGesture = Gesture.Pan()
+    .enabled(isComposerMounted && !isComposerBusy)
+    .maxPointers(1)
+    .activeOffsetY(14)
+    .failOffsetX([-20, 20])
+    .onStart(() => {
+      cancelAnimation(composerProgress);
+    })
+    .onUpdate((event) => {
+      const downwardDistance = Math.max(0, event.translationY);
+      const upwardDistance = Math.max(0, -event.translationY);
+      const dampedUpward = upwardDistance * 0.15;
+
+      composerDragY.value = downwardDistance > 0 ? downwardDistance : -dampedUpward;
+
+      if (downwardDistance > 0) {
+        runOnJS(setKeyboardOffsetY)(downwardDistance);
+      }
+    })
+    .onEnd((event) => {
+      const shouldDismiss =
+        event.translationY >= HOME_COMPOSER_DISMISS_DRAG_THRESHOLD ||
+        event.velocityY >= HOME_COMPOSER_DISMISS_VELOCITY_THRESHOLD;
+
+      if (shouldDismiss) {
+        composerDismissing.value = true;
+        runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Light);
+        runOnJS(requestComposerDismiss)();
+      } else {
+        runOnJS(resetKeyboardOffset)();
+        composerDragY.value = withSpring(0, { damping: 20, stiffness: 240 });
+        if (composerProgress.value < 1) {
+          composerProgress.value = withTiming(1, {
+            duration: 120,
+            easing: Easing.bezier(0.16, 1, 0.3, 1),
+          });
+        }
+      }
+    })
+    .onFinalize(() => {
+      if (!composerDismissing.value && composerDragY.value !== 0) {
+        composerDragY.value = withSpring(0, { damping: 20, stiffness: 240 });
+      }
+    });
 
   const voiceLabel =
     composerMode === 'recording'
-      ? `Finish recording · ${recordingDurationLabel}`
-      : composerMode === 'transcribing'
-        ? 'Transcribing…'
-        : isVoiceAvailable === false
-          ? 'Voice unavailable'
-          : isVoiceAvailable === null
-            ? 'Checking voice…'
-            : 'Record voice';
-  const voiceHint =
-    composerMode === 'recording'
-      ? 'Pocket-No will stop listening and write your personalized no.'
-      : composerMode === 'transcribing'
-        ? 'Hold on for a beat while your words turn into context.'
-        : isVoiceAvailable === false
-          ? 'This device cannot transcribe your voice right now.'
-          : isVoiceAvailable === null
-            ? 'Still confirming whether this device can transcribe on-device.'
-            : 'Talk naturally, then tap again to turn it into a personalized no.';
+      ? `Stop \u00B7 ${recordingDurationLabel}`
+      : composerVoiceError
+        ? composerVoiceError
+        : composerMode === 'transcribing'
+          ? 'Listening...'
+          : undefined;
   const voiceSymbol =
-    composerMode === 'recording'
-      ? 'stop.fill'
-      : composerMode === 'transcribing'
-        ? 'waveform'
-        : isVoiceAvailable === false
-          ? 'mic.slash.fill'
+    composerVoiceError
+      ? 'xmark'
+      : composerMode === 'recording'
+        ? 'stop.fill'
+        : composerMode === 'transcribing'
+          ? 'waveform'
           : 'mic.fill';
-  const voiceDisabled =
-    composerMode === 'transcribing' ||
-    composerMode === 'submitting' ||
-    isVoiceAvailable !== true;
+  const showVoice =
+    isVoiceAvailable === true &&
+    composerMode !== 'submitting';
 
   return (
     <View className="flex-1 bg-paper">
@@ -636,11 +728,9 @@ export default function PocketNoHomeScreen() {
           accessibilityLabel="Close personalized no composer"
           accessibilityRole="button"
           className="absolute inset-0"
-          onPress={() => void closeComposer()}>
+          onPress={() => void requestComposerDismiss()}>
           <Animated.View
             className="absolute inset-0 bg-black/10"
-            entering={FadeIn.duration(120)}
-            exiting={FadeOut.duration(120)}
             style={composerBackdropStyle}
           />
         </Pressable>
@@ -663,14 +753,11 @@ export default function PocketNoHomeScreen() {
               style={({ pressed }) => ({
                 opacity: pressed && !isComposerMounted ? 0.92 : 1,
               })}>
-              <Animated.View className="items-center gap-2 pb-3" style={actionTrayCueStyle}>
+              <Animated.View className="items-center pb-3" style={actionTrayCueStyle}>
                 <View
                   className="h-[5px] w-12 rounded-full"
                   style={{ backgroundColor: loadingBorderColor }}
                 />
-                <Text className="text-[12px] font-semibold tracking-[0.1px] text-subtle-ink">
-                  Pull up or tap for a personalized no
-                </Text>
               </Animated.View>
             </Pressable>
           ) : null}
@@ -712,55 +799,49 @@ export default function PocketNoHomeScreen() {
               pointerEvents="box-none"
               className="absolute inset-x-0 bottom-0"
               style={{ paddingHorizontal: 2, paddingBottom: 2 }}>
-              <Animated.View
-                pointerEvents="none"
-                className="absolute self-center rounded-full"
-                style={[
-                  {
-                    width: 68,
-                    height: 68,
-                    backgroundColor: accentColor,
-                  },
-                  composerOrbStyle,
-                ]}
-              />
+              <GestureDetector gesture={composerPanGesture}>
+                <Animated.View
+                  className="rounded-[30px] border px-3.5 pt-3.5 pb-3.5"
+                  style={[
+                    {
+                      backgroundColor: loadingSurfaceColor,
+                      borderColor: loadingBorderColor,
+                      borderCurve: 'continuous',
+                      boxShadow: '0 24px 48px rgba(0,0,0,0.14)',
+                    },
+                    composerPanelStyle,
+                  ]}>
+                  <View className="items-center pb-2.5">
+                    <View
+                      className="h-[5px] w-10 rounded-full"
+                      style={{ backgroundColor: loadingBorderColor }}
+                    />
+                  </View>
 
-              <Animated.View
-                className="rounded-[30px] border px-3.5 pt-3.5 pb-3.5"
-                style={[
-                  {
-                    backgroundColor: loadingSurfaceColor,
-                    borderColor: loadingBorderColor,
-                    borderCurve: 'continuous',
-                    boxShadow: '0 24px 48px rgba(0,0,0,0.14)',
-                  },
-                  composerPanelStyle,
-                ]}>
-                <PersonalizeComposer
-                  autoFocus={false}
-                  errorMessage={composerErrorMessage}
-                  inputRef={inputRef}
-                  maxLength={HOME_COMPOSER_MAX_LENGTH}
-                  noteMessage={composerNoteMessage}
-                  onChangeText={(nextValue) => {
-                    setComposerText(nextValue);
-                    if (composerErrorMessage) {
-                      setComposerErrorMessage(null);
-                    }
-                  }}
-                  onClose={() => void closeComposer()}
-                  onSubmit={() => void handleComposerSubmit()}
-                  onVoicePress={() => void handleVoicePress()}
-                  submitBusy={composerMode === 'submitting'}
-                  submitDisabled={!canSubmitPersonalization}
-                  submitSymbol={composerMode === 'submitting' ? 'sparkles' : 'arrow.up'}
-                  value={composerText}
-                  voiceDisabled={voiceDisabled}
-                  voiceHint={voiceHint}
-                  voiceLabel={voiceLabel}
-                  voiceSymbol={voiceSymbol}
-                />
-              </Animated.View>
+                  <PersonalizeComposer
+                    autoFocus={false}
+                    errorMessage={composerErrorMessage}
+                    inputRef={inputRef}
+                    maxLength={HOME_COMPOSER_MAX_LENGTH}
+                    onChangeText={(nextValue) => {
+                      setComposerText(nextValue);
+                      if (composerErrorMessage) {
+                        setComposerErrorMessage(null);
+                      }
+                    }}
+                    onClose={() => void requestComposerDismiss()}
+                    onSubmit={() => void handleComposerSubmit()}
+                    onVoicePress={showVoice ? () => void handleVoicePress() : undefined}
+                    submitBusy={composerMode === 'submitting'}
+                    submitDisabled={!canSubmitPersonalization}
+                    submitSymbol={composerMode === 'submitting' ? 'sparkles' : 'arrow.up'}
+                    value={composerText}
+                    voiceErrorMessage={composerVoiceError}
+                    voiceLabel={voiceLabel}
+                    voiceSymbol={voiceSymbol}
+                  />
+                </Animated.View>
+              </GestureDetector>
             </View>
           ) : null}
         </Animated.View>

@@ -35,3 +35,110 @@ describe('apple personalization helpers', () => {
     );
   });
 });
+
+describe('apple voice personalization preparation', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.resetModules();
+  });
+
+  it('reuses the prepared transcription model between availability and transcription', async () => {
+    jest.resetModules();
+
+    const prepare = jest.fn().mockResolvedValue(undefined);
+    const model = { prepare };
+    const transcriptionModel = jest.fn(() => model);
+    const isAvailable = jest.fn(() => true);
+    const arrayBuffer = new ArrayBuffer(8);
+    const fileArrayBuffer = jest.fn().mockResolvedValue(arrayBuffer);
+    const File = jest.fn(() => ({ arrayBuffer: fileArrayBuffer }));
+    const transcribe = jest.fn().mockResolvedValue({
+      text: '  tell them no  ',
+    });
+
+    jest.doMock('react-native', () => ({
+      Platform: { OS: 'ios' },
+    }));
+
+    const {
+      applePersonalizationDependencies,
+      isAppleVoicePersonalizationAvailable,
+      transcribePersonalizationAudioFile,
+    } = require('../apple-personalization');
+
+    applePersonalizationDependencies.loadAppleModule = jest.fn().mockResolvedValue({
+      apple: {
+        isAvailable,
+        transcriptionModel,
+      },
+    });
+    applePersonalizationDependencies.loadAiModule = jest.fn().mockResolvedValue({
+      experimental_transcribe: transcribe,
+    });
+    applePersonalizationDependencies.loadExpoFileSystemModule = jest.fn().mockResolvedValue({
+      File,
+    });
+
+    await expect(isAppleVoicePersonalizationAvailable()).resolves.toBe(true);
+    await expect(
+      transcribePersonalizationAudioFile('file:///tmp/personalize.m4a')
+    ).resolves.toBe('tell them no');
+
+    expect(isAvailable).toHaveBeenCalledTimes(2);
+    expect(transcriptionModel).toHaveBeenCalledTimes(1);
+    expect(prepare).toHaveBeenCalledTimes(1);
+    expect(File).toHaveBeenCalledWith('file:///tmp/personalize.m4a');
+    expect(fileArrayBuffer).toHaveBeenCalledTimes(1);
+    expect(transcribe).toHaveBeenCalledWith({
+      model,
+      audio: arrayBuffer,
+    });
+  });
+
+  it('continues to use apple() directly for text personalization', async () => {
+    jest.resetModules();
+
+    const appleLanguageModel = {};
+    const apple = Object.assign(jest.fn(() => appleLanguageModel), {
+      isAvailable: jest.fn(() => true),
+      transcriptionModel: jest.fn(),
+    });
+    const generateObject = jest.fn().mockResolvedValue({
+      object: { reason: '  "Hard pass."  ' },
+    });
+
+    jest.doMock('react-native', () => ({
+      Platform: { OS: 'ios' },
+    }));
+
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(123);
+    const {
+      applePersonalizationDependencies,
+      generatePersonalizedNo,
+    } = require('../apple-personalization');
+
+    applePersonalizationDependencies.loadAppleModule = jest.fn().mockResolvedValue({
+      apple,
+    });
+    applePersonalizationDependencies.loadAiModule = jest.fn().mockResolvedValue({
+      generateObject,
+    });
+
+    await expect(generatePersonalizedNo('  dinner tonight  ')).resolves.toMatchObject({
+      id: 'apple-personalized-123',
+      text: 'Hard pass.',
+      source: 'apple-personalized',
+    });
+
+    expect(apple).toHaveBeenCalledTimes(1);
+    expect(apple.transcriptionModel).not.toHaveBeenCalled();
+    expect(generateObject).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: appleLanguageModel,
+        prompt: 'Context: dinner tonight',
+      })
+    );
+
+    nowSpy.mockRestore();
+  });
+});
