@@ -43,6 +43,13 @@
           }
         }
       ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Pocket-No uses the microphone to turn your voice into a personalized no.",
+          "enableBackgroundPlayback": false
+        }
+      ],
       "@bacons/apple-targets",
       "./plugins/with-screenless-quick-copy"
     ],

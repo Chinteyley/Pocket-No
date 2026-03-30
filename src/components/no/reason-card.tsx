@@ -26,6 +26,7 @@ type ReasonCardProps = {
   copyState?: 'idle' | 'success';
   copiedTextColor?: string;
   onTextMeasure?: (cy: number, ry: number, rx: number) => void;
+  bottomAccessory?: React.ReactNode;
 };
 
 export function ReasonCard({
@@ -39,6 +40,7 @@ export function ReasonCard({
   copyState = 'idle',
   copiedTextColor,
   onTextMeasure,
+  bottomAccessory,
 }: ReasonCardProps) {
   const rootLayoutRef = useRef<LayoutRectangle | null>(null);
   const textLayoutRef = useRef<LayoutRectangle | null>(null);
@@ -135,6 +137,12 @@ export function ReasonCard({
             className="text-sm leading-[21px] text-subtle-ink text-center">
             {footer}
           </Text>
+        </Animated.View>
+      ) : null}
+
+      {bottomAccessory ? (
+        <Animated.View entering={FadeIn.delay(80).duration(220)}>
+          {bottomAccessory}
         </Animated.View>
       ) : null}
     </View>

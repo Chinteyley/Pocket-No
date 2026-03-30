@@ -1,15 +1,17 @@
-import type { ExpoConfig } from 'expo/config';
+import type { ConfigContext, ExpoConfig } from 'expo/config';
 
-const appJson = require('./app.json') as { expo: ExpoConfig };
 type ExpoPlugin = string | [string] | [string, Record<string, unknown>];
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-export default (): ExpoConfig => {
+export default ({ config }: ConfigContext): ExpoConfig => {
   const origin = process.env.EXPO_PUBLIC_SITE_ORIGIN?.trim();
-  const plugins = ((appJson.expo.plugins ?? []) as ExpoPlugin[]).map<ExpoPlugin>((plugin) => {
+  const name = config.name ?? 'Pocket-No';
+  const slug = config.slug ?? 'pocket-no';
+  const version = config.version ?? '1.0.0';
+  const plugins = ((config.plugins ?? []) as ExpoPlugin[]).map<ExpoPlugin>((plugin) => {
     if (plugin === 'expo-router') {
       return origin ? ['expo-router', { origin }] : plugin;
     }
@@ -25,10 +27,13 @@ export default (): ExpoConfig => {
 
     return plugin;
   });
-  const extra = isObjectRecord(appJson.expo.extra) ? appJson.expo.extra : {};
+  const extra = isObjectRecord(config.extra) ? config.extra : {};
 
   return {
-    ...appJson.expo,
+    ...config,
+    name,
+    slug,
+    version,
     plugins,
     extra: {
       ...extra,

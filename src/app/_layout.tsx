@@ -1,8 +1,10 @@
 import "../global.css";
+import '@/lib/ai-polyfills';
 
 import { StatusBar } from "expo-status-bar";
 import { Stack } from "expo-router/stack";
 import React from "react";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   SafeAreaListener,
   SafeAreaProvider,
@@ -35,23 +37,25 @@ function NativeRootLayout() {
   const paperColor = useCSSVariable("--color-paper") as string;
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaListener
-        onChange={({ insets }) => {
-          Uniwind.updateInsets(insets);
-        }}
-      >
-        <StatusBar style="auto" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: paperColor },
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <SafeAreaListener
+          onChange={({ insets }) => {
+            Uniwind.updateInsets(insets);
           }}
         >
-          <Stack.Screen name="(app)" options={{ headerShown: false }} />
-        </Stack>
-      </SafeAreaListener>
-    </SafeAreaProvider>
+          <StatusBar style="auto" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: paperColor },
+            }}
+          >
+            <Stack.Screen name="(app)" options={{ headerShown: false }} />
+          </Stack>
+        </SafeAreaListener>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
