@@ -11,22 +11,30 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   const name = config.name ?? 'Pocket-No';
   const slug = config.slug ?? 'pocket-no';
   const version = config.version ?? '1.0.0';
-  const plugins = ((config.plugins ?? []) as ExpoPlugin[]).map<ExpoPlugin>((plugin) => {
-    if (plugin === 'expo-router') {
-      return origin ? ['expo-router', { origin }] : plugin;
-    }
+  const plugins: ExpoPlugin[] = [
+    ...((config.plugins ?? []) as ExpoPlugin[]).map<ExpoPlugin>((plugin) => {
+      if (plugin === 'expo-router') {
+        return origin ? ['expo-router', { origin }] : plugin;
+      }
 
-    if (Array.isArray(plugin) && plugin[0] === 'expo-router') {
-      const pluginConfig =
-        typeof plugin[1] === 'object' && plugin[1] !== null
-          ? (plugin[1] as Record<string, unknown>)
-          : {};
+      if (Array.isArray(plugin) && plugin[0] === 'expo-router') {
+        const pluginConfig =
+          typeof plugin[1] === 'object' && plugin[1] !== null
+            ? (plugin[1] as Record<string, unknown>)
+            : {};
 
-      return origin ? ['expo-router', { ...pluginConfig, origin }] : ['expo-router', pluginConfig];
-    }
+        return origin
+          ? ['expo-router', { ...pluginConfig, origin }]
+          : ['expo-router', pluginConfig];
+      }
 
-    return plugin;
-  });
+      return plugin;
+    }),
+    'expo-asset',
+    'expo-font',
+    'expo-image',
+    'expo-web-browser',
+  ];
   const extra = isObjectRecord(config.extra) ? config.extra : {};
 
   return {
