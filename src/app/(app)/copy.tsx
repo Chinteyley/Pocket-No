@@ -135,12 +135,7 @@ function CopyScreenContent({
               entering={FadeInDown.duration(200)}
               selectable
               className="text-[31px] leading-[39px] font-extrabold tracking-[-1.1px]"
-              style={{
-                color: copiedReasonTextColor,
-                textShadowColor: showCopySuccess ? 'rgba(232, 108, 47, 0.34)' : 'transparent',
-                textShadowOffset: { width: 0, height: 6 },
-                textShadowRadius: showCopySuccess ? 20 : 0,
-              }}>
+              style={{ color: copiedReasonTextColor }}>
               {displayText}
             </Animated.Text>
           </View>

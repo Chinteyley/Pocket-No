@@ -115,12 +115,7 @@ export function ReasonCard({
             )}
             style={
               !isPlaceholder && copyState === 'success'
-                ? {
-                    color: copiedTextColor ?? baseTextColor,
-                    textShadowColor: 'rgba(232, 108, 47, 0.34)',
-                    textShadowOffset: { width: 0, height: 6 },
-                    textShadowRadius: 20,
-                  }
+                ? { color: copiedTextColor ?? baseTextColor }
                 : undefined
             }>
             {displayText}
