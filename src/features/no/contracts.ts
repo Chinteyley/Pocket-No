@@ -1,10 +1,12 @@
 export const NO_REASON_SOURCE = 'catalog' as const;
 export const JSON_CATALOG_NO_REASON_SOURCE = 'json-catalog' as const;
 export const REMOTE_CATALOG_NO_REASON_SOURCE = 'remote-catalog' as const;
+export const APPLE_PERSONALIZED_NO_REASON_SOURCE = 'apple-personalized' as const;
 export const NO_REASON_SOURCES = [
   NO_REASON_SOURCE,
   JSON_CATALOG_NO_REASON_SOURCE,
   REMOTE_CATALOG_NO_REASON_SOURCE,
+  APPLE_PERSONALIZED_NO_REASON_SOURCE,
 ] as const;
 
 export type NoReasonSource = (typeof NO_REASON_SOURCES)[number];

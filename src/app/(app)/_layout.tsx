@@ -42,6 +42,15 @@ function WebAppLayout() {
           }}
         />
         <Stack.Screen
+          name="personalize"
+          options={{
+            title: "Personalize",
+            presentation: "formSheet",
+            sheetGrabberVisible: true,
+            sheetAllowedDetents: [0.42, 0.88],
+          }}
+        />
+        <Stack.Screen
           name="privacy"
           options={{ title: "Privacy Policy" }}
         />
@@ -106,6 +115,15 @@ function NativeAppLayout() {
             headerTransparent: true,
             headerShown: false,
             contentStyle: { backgroundColor: "transparent" },
+          }}
+        />
+        <Stack.Screen
+          name="personalize"
+          options={{
+            title: "Personalize",
+            presentation: "formSheet",
+            sheetGrabberVisible: true,
+            sheetAllowedDetents: [0.42, 0.88],
           }}
         />
         <Stack.Screen
