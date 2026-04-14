@@ -8,7 +8,6 @@
     "scheme": "pocketno",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true,
       "requireFullScreen": true,
       "icon": "./assets/pocket-no.icon",
       "bundleIdentifier": "dev.ctey.pocketno",
