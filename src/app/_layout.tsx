@@ -34,7 +34,7 @@ function WebRootLayout() {
 }
 
 function NativeRootLayout() {
-  const paperColor = useCSSVariable("--color-paper") as string;
+  const paperColor = (useCSSVariable("--color-paper") as string) ?? "#ffffff";
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
