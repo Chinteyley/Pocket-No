@@ -54,6 +54,10 @@ function WebAppLayout() {
           name="privacy"
           options={{ title: "Privacy Policy" }}
         />
+        <Stack.Screen
+          name="support"
+          options={{ title: "Support" }}
+        />
       </Stack>
     </>
   );
@@ -129,6 +133,10 @@ function NativeAppLayout() {
         <Stack.Screen
           name="privacy"
           options={{ title: "Privacy Policy" }}
+        />
+        <Stack.Screen
+          name="support"
+          options={{ title: "Support" }}
         />
       </Stack>
     </>
