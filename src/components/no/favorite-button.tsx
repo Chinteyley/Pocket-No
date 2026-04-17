@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
 import React from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Platform, Pressable, useColorScheme, View } from 'react-native';
 import { useCSSVariable } from 'uniwind';
 
 import {
@@ -29,6 +29,9 @@ export function FavoriteButton({
 }: FavoriteButtonProps) {
   const accentColor = useCSSVariable('--color-accent') as string;
   const subtleInkColor = useCSSVariable('--color-subtle-ink') as string;
+  const colorScheme = useColorScheme();
+  const pressedFill =
+    colorScheme === 'dark' ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.08)';
   const isFav = React.useSyncExternalStore(
     subscribeToFavorites,
     () => (id ? isFavorite(id) : false),
@@ -61,8 +64,9 @@ export function FavoriteButton({
       style={({ pressed }) => ({
         padding,
         borderRadius: (size + padding * 2) / 2,
-        opacity: !id ? 0.4 : pressed ? 0.7 : 1,
-        transform: [{ scale: pressed ? 0.9 : 1 }],
+        backgroundColor: pressed && id ? pressedFill : 'transparent',
+        opacity: !id ? 0.4 : 1,
+        transform: [{ scale: pressed && id ? 0.94 : 1 }],
       })}>
       <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
         {Platform.OS === 'ios' ? (

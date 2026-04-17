@@ -722,8 +722,16 @@ export default function PocketNoHomeScreen() {
           }}
           bottomAccessory={
             displayedReason ? (
-              <GlassCapsule padding={4} style={{ gap: 2 }}>
+              <GlassCapsule padding={4} style={{ gap: 4 }}>
                 <FavoriteButton id={displayedReason.id} size={20} padding={10} />
+                <View
+                  style={{
+                    width: 1,
+                    height: 20,
+                    backgroundColor: outlineColor,
+                    alignSelf: 'center',
+                  }}
+                />
                 <ShareButton
                   text={displayedReason.copiedText ?? displayedReason.text}
                   size={20}

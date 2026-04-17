@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
 import React from 'react';
-import { Platform, Pressable, Share, View } from 'react-native';
+import { Platform, Pressable, Share, useColorScheme, View } from 'react-native';
 import { useCSSVariable } from 'uniwind';
 
 type ShareButtonProps = {
@@ -22,6 +22,9 @@ export function ShareButton({
   accessibilityLabel = 'Share this no',
 }: ShareButtonProps) {
   const subtleInkColor = useCSSVariable('--color-subtle-ink') as string;
+  const colorScheme = useColorScheme();
+  const pressedFill =
+    colorScheme === 'dark' ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.08)';
 
   const handlePress = async () => {
     const trimmed = text?.trim();
@@ -50,8 +53,9 @@ export function ShareButton({
       style={({ pressed }) => ({
         padding,
         borderRadius: (size + padding * 2) / 2,
-        opacity: disabled ? 0.4 : pressed ? 0.7 : 1,
-        transform: [{ scale: pressed ? 0.9 : 1 }],
+        backgroundColor: pressed && !disabled ? pressedFill : 'transparent',
+        opacity: disabled ? 0.4 : 1,
+        transform: [{ scale: pressed && !disabled ? 0.94 : 1 }],
       })}>
       <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
         {Platform.OS === 'ios' ? (
