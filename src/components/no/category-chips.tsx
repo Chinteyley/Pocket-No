@@ -11,7 +11,7 @@ type CategoryChipsProps = {
 
 export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
   const accentColor = useCSSVariable('--color-accent') as string;
-  const warmSurfaceColor = useCSSVariable('--color-warm-surface') as string;
+  const surfaceColor = useCSSVariable('--color-surface') as string;
   const outlineColor = useCSSVariable('--color-outline') as string;
   const inkColor = useCSSVariable('--color-ink') as string;
   const paperColor = useCSSVariable('--color-paper') as string;
@@ -20,12 +20,12 @@ export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingHorizontal: 20, gap: 8, paddingVertical: 12 }}>
+      contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingVertical: 4 }}>
       <Chip
         label="All"
         active={selected === null}
         activeBackground={accentColor}
-        idleBackground={warmSurfaceColor}
+        idleBackground={surfaceColor}
         activeTextColor={paperColor}
         idleTextColor={inkColor}
         borderColor={outlineColor}
@@ -37,7 +37,7 @@ export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
           label={category.label}
           active={selected === category.id}
           activeBackground={accentColor}
-          idleBackground={warmSurfaceColor}
+          idleBackground={surfaceColor}
           activeTextColor={paperColor}
           idleTextColor={inkColor}
           borderColor={outlineColor}
@@ -80,7 +80,7 @@ function Chip({
       <View
         style={{
           paddingHorizontal: 14,
-          paddingVertical: 8,
+          paddingVertical: 10,
           borderRadius: 999,
           borderWidth: 1,
           borderColor: active ? activeBackground : borderColor,
