@@ -2,7 +2,6 @@ import { useIsFocused } from '@react-navigation/native';
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder, useAudioRecorderState } from 'expo-audio';
 import * as Haptics from 'expo-haptics';
 import * as QuickActions from 'expo-quick-actions';
-import { Stack } from 'expo-router';
 import React from 'react';
 import { Pressable, TextInput, View, useColorScheme } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -23,8 +22,11 @@ import { useCSSVariable } from 'uniwind';
 
 import { ActionButton } from '@/components/no/action-button';
 import { AmbientBackground } from '@/components/no/ambient-background';
+import { FavoriteButton } from '@/components/no/favorite-button';
+import { GlassCapsule } from '@/components/no/glass-capsule';
 import { PersonalizeComposer } from '@/components/no/personalize-composer';
 import { ReasonCard } from '@/components/no/reason-card';
+import { ShareButton } from '@/components/no/share-button';
 import {
   generatePersonalizedNo,
   isApplePersonalizationAvailable,
@@ -41,7 +43,7 @@ import {
 } from '@/features/no/personalized-reason-store';
 import { copyNoReasonToClipboard, fetchFreshNoReason } from '@/features/no/no-reason-service';
 import { useMountEffect } from '@/hooks/useMountEffect';
-import { resetKeyboardOffset, setKeyboardOffsetY } from '../../../modules/keyboard-dismiss';
+import { resetKeyboardOffset, setKeyboardOffsetY } from '../../../../modules/keyboard-dismiss';
 
 const HOME_REASON_TRANSITION_DELAY_MS = 240;
 const HOME_NEW_BUTTON_PROGRESS_DELAY_MS = 450;
@@ -695,7 +697,13 @@ export default function PocketNoHomeScreen() {
 
   return (
     <View className="flex-1 bg-paper">
-      <Stack.Screen options={{ headerShown: false }} />
+      <AmbientBackground
+        isScreenActive={isFocused}
+        textCy={textCy}
+        textRy={textRy}
+        textRx={textRx}
+        textFill={textFill}
+      />
 
       <View className="flex-1 pt-safe">
         <ReasonCard
@@ -712,16 +720,20 @@ export default function PocketNoHomeScreen() {
             textRy.value = withSpring(ry, { damping: 18, stiffness: 80 });
             textRx.value = withSpring(rx, { damping: 18, stiffness: 80 });
           }}
+          bottomAccessory={
+            displayedReason ? (
+              <GlassCapsule padding={4} style={{ gap: 2 }}>
+                <FavoriteButton id={displayedReason.id} size={20} padding={10} />
+                <ShareButton
+                  text={displayedReason.copiedText ?? displayedReason.text}
+                  size={20}
+                  padding={10}
+                />
+              </GlassCapsule>
+            ) : undefined
+          }
         />
       </View>
-
-      <AmbientBackground
-        isScreenActive={isFocused}
-        textCy={textCy}
-        textRy={textRy}
-        textRx={textRx}
-        textFill={textFill}
-      />
 
       {isComposerMounted ? (
         <Pressable
@@ -738,7 +750,7 @@ export default function PocketNoHomeScreen() {
 
       <GestureDetector gesture={actionTrayPan}>
         <Animated.View
-          className="mx-5 mb-safe-offset-4 rounded-[28px] border px-3.5 pt-3.5 pb-3.5"
+          className="mx-5 mb-safe-offset-20 rounded-[28px] border px-3.5 pt-3.5 pb-3.5"
           style={[
             { boxShadow: '0 18px 42px rgba(0,0,0,0.06)', overflow: 'visible' },
             actionTrayStyle,

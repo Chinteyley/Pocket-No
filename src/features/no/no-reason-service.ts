@@ -2,6 +2,7 @@ import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 
 import type { NoReason } from './contracts';
+import { recordHistoryEntry } from './history-store';
 import {
   fetchFreshNoReason as fetchFreshNoReasonFromApi,
   type FetchFreshNoReasonResult,
@@ -21,6 +22,7 @@ async function playSuccessHaptic() {
 
 async function copyReason(reason: NoReason) {
   await Clipboard.setStringAsync(reason.copiedText);
+  recordHistoryEntry(reason.id);
   await playSuccessHaptic();
 }
 

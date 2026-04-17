@@ -55,8 +55,8 @@ export function ReasonCard({
 
     onTextMeasure?.(
       (rootLayout.y + textLayout.y + textLayout.height / 2) / screenHeight,
-      (textLayout.height / 2 + 36) / screenHeight,
-      (textLayout.width / 2 + 64) / screenWidth,
+      (textLayout.height / 2 + 100) / screenHeight,
+      (textLayout.width / 2 + 80) / screenWidth,
     );
   }, [onTextMeasure, screenHeight, screenWidth]);
   const handleRootLayout = useCallback((event: LayoutChangeEvent) => {

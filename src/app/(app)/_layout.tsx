@@ -7,7 +7,7 @@ import { useCSSVariable } from "uniwind";
 import { useMountEffect } from "@/hooks/useMountEffect";
 
 export const unstable_settings = {
-  initialRouteName: "index",
+  initialRouteName: "(tabs)",
 };
 
 function WebAppLayout() {
@@ -26,7 +26,7 @@ function WebAppLayout() {
         }}
       >
         <Stack.Screen
-          name="index"
+          name="(tabs)"
           options={{ headerShown: false, title: "Pocket No" }}
         />
         <Stack.Screen
@@ -106,7 +106,7 @@ function NativeAppLayout() {
         }}
       >
         <Stack.Screen
-          name="index"
+          name="(tabs)"
           options={{ headerShown: false, title: "Pocket No" }}
         />
         <Stack.Screen

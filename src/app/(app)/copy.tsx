@@ -5,6 +5,9 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActionButton } from '@/components/no/action-button';
+import { FavoriteButton } from '@/components/no/favorite-button';
+import { GlassCapsule } from '@/components/no/glass-capsule';
+import { ShareButton } from '@/components/no/share-button';
 import {
   copyNoReasonToClipboard,
   fetchFreshNoReason,
@@ -157,6 +160,15 @@ function CopyScreenContent({
             tone="primary"
           />
         </View>
+
+        {reason && state !== 'error' ? (
+          <View className="mt-3 items-center">
+            <GlassCapsule padding={4} style={{ gap: 2 }}>
+              <FavoriteButton id={reason.id} size={22} padding={10} />
+              <ShareButton text={reason.copiedText ?? reason.text} size={22} padding={10} />
+            </GlassCapsule>
+          </View>
+        ) : null}
       </View>
     </View>
   );
