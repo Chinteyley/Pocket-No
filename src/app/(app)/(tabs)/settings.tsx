@@ -16,7 +16,7 @@ type RowDef = {
   label: string;
   description?: string;
   icon: SFSymbol;
-  href?: '/personalize' | '/privacy' | '/support';
+  href?: '/privacy' | '/support';
   destructive?: boolean;
   onPress?: () => void;
 };
@@ -65,15 +65,6 @@ export default function SettingsScreen() {
     );
   };
 
-  const generalRows: RowDef[] = [
-    {
-      label: 'Personalize a no',
-      description: 'Apple Intelligence turns your context into a line. iOS 18+.',
-      icon: 'sparkles',
-      href: '/personalize',
-    },
-  ];
-
   const dataRows: RowDef[] = [
     {
       label:
@@ -120,21 +111,6 @@ export default function SettingsScreen() {
           Personalize and manage your saved lines.
         </Text>
       </View>
-
-      <Section title="General" subtleInkColor={subtleInkColor}>
-        {generalRows.map((row, index) => (
-          <SettingsRow
-            key={row.label}
-            row={row}
-            isLast={index === generalRows.length - 1}
-            inkColor={inkColor}
-            subtleInkColor={subtleInkColor}
-            accentColor={accentColor}
-            outlineColor={outlineColor}
-            surfaceColor={surfaceMutedColor}
-          />
-        ))}
-      </Section>
 
       <Section title="Appearance" subtleInkColor={subtleInkColor}>
         {APPEARANCE_OPTIONS.map((option, index) => (
