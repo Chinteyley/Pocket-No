@@ -15,17 +15,17 @@ const FEATURES = [
   {
     title: 'Instant',
     description:
-      'One tap to copy. No scrolling, no browsing, no decision fatigue. Open the app, get an excuse, done.',
+      'One tap to copy. No scrolling, no decision fatigue. Open the app, get an excuse, done.',
   },
   {
-    title: 'Thoughtful',
+    title: 'Curated',
     description:
-      'Every line is crafted to be honest but polite. Say no without burning bridges or feeling guilty.',
+      '300+ thoughtful lines. Browse by mood, save your favorites, and personalize new ones with Apple Intelligence.',
   },
   {
     title: 'Everywhere',
     description:
-      'Home screen quick actions, Siri Shortcuts, and a widget. Say no without even opening the app.',
+      'Native iOS tabs, Siri Shortcuts, home screen quick actions, and light/dark/system appearance.',
   },
 ] as const;
 
