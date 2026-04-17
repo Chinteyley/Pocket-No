@@ -1,30 +1,29 @@
-import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { SymbolView, type SFSymbol } from 'expo-symbols';
-import React from 'react';
-import { Alert, Platform, ScrollView, Text, View } from 'react-native';
-import Stack from 'expo-router/stack';
+import { Image } from "expo-image";
+import { router } from "expo-router";
+import { SymbolView, type SFSymbol } from "expo-symbols";
+import React from "react";
+import { Alert, Platform, ScrollView, Text, View } from "react-native";
+import Stack from "expo-router/stack";
 
 import {
   TabCardGroup,
   TabCardRow,
   TabFallbackHeader,
   TabSectionHeader,
-  TabStatPill,
   useTabScreenColors,
-} from '@/components/no/tab-screen-shell';
-import { clearFavorites, useFavorites } from '@/features/no/favorites-store';
+} from "@/components/no/tab-screen-shell";
+import { clearFavorites, useFavorites } from "@/features/no/favorites-store";
 import {
   setThemePreference,
   useThemePreference,
   type ThemePreference,
-} from '@/features/theme/theme-preference-store';
+} from "@/features/theme/theme-preference-store";
 
 type RowDef = {
   label: string;
   description?: string;
   icon: SFSymbol;
-  href?: '/privacy' | '/support';
+  href?: "/privacy" | "/support";
   destructive?: boolean;
   onPress?: () => void;
   disabled?: boolean;
@@ -37,17 +36,22 @@ interface AppearanceOption {
 }
 
 const APPEARANCE_OPTIONS: readonly AppearanceOption[] = [
-  { value: 'system', label: 'System', icon: 'circle.lefthalf.filled' },
-  { value: 'light', label: 'Light', icon: 'sun.max.fill' },
-  { value: 'dark', label: 'Dark', icon: 'moon.fill' },
+  { value: "system", label: "System", icon: "circle.lefthalf.filled" },
+  { value: "light", label: "Light", icon: "sun.max.fill" },
+  { value: "dark", label: "Dark", icon: "moon.fill" },
 ];
 
 export default function SettingsScreen() {
   const favorites = useFavorites();
   const themePreference = useThemePreference();
-  const { paperColor, subtleInkColor, accentColor, surfaceMutedColor, outlineColor } =
-    useTabScreenColors();
-  const isIos = process.env.EXPO_OS === 'ios';
+  const {
+    paperColor,
+    subtleInkColor,
+    accentColor,
+    surfaceMutedColor,
+    outlineColor,
+  } = useTabScreenColors();
+  const isIos = process.env.EXPO_OS === "ios";
 
   const handleClearFavorites = () => {
     if (favorites.size === 0) {
@@ -55,19 +59,21 @@ export default function SettingsScreen() {
     }
 
     const confirmLabel =
-      favorites.size === 1 ? 'Clear 1 favorite' : `Clear ${favorites.size} favorites`;
+      favorites.size === 1
+        ? "Clear 1 favorite"
+        : `Clear ${favorites.size} favorites`;
 
     Alert.alert(
-      'Clear favorites?',
-      'This removes every saved line from your device. This cannot be undone.',
+      "Clear favorites?",
+      "This removes every saved line from your device. This cannot be undone.",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
           text: confirmLabel,
-          style: 'destructive',
+          style: "destructive",
           onPress: () => clearFavorites(),
         },
-      ]
+      ],
     );
   };
 
@@ -75,13 +81,13 @@ export default function SettingsScreen() {
     {
       label:
         favorites.size === 0
-          ? 'No favorites saved'
-          : `Clear ${favorites.size} ${favorites.size === 1 ? 'favorite' : 'favorites'}`,
+          ? "No favorites saved"
+          : `Clear ${favorites.size} ${favorites.size === 1 ? "favorite" : "favorites"}`,
       description:
         favorites.size === 0
-          ? 'Saved lines will appear on the Favorites tab.'
-          : 'Remove every saved line from this device.',
-      icon: 'heart.slash',
+          ? "Saved lines will appear on the Favorites tab."
+          : "Remove every saved line from this device.",
+      icon: "heart.slash",
       destructive: favorites.size > 0,
       onPress: handleClearFavorites,
       disabled: favorites.size === 0,
@@ -89,8 +95,8 @@ export default function SettingsScreen() {
   ];
 
   const aboutRows: RowDef[] = [
-    { label: 'Support', icon: 'questionmark.circle', href: '/support' },
-    { label: 'Privacy Policy', icon: 'lock.shield', href: '/privacy' },
+    { label: "Support", icon: "questionmark.circle", href: "/support" },
+    { label: "Privacy Policy", icon: "lock.shield", href: "/privacy" },
   ];
 
   return (
@@ -98,10 +104,21 @@ export default function SettingsScreen() {
       {isIos ? (
         <>
           <Stack.Header
-            style={{ backgroundColor: paperColor, color: subtleInkColor, shadowColor: 'transparent' }}
-            largeStyle={{ backgroundColor: paperColor, shadowColor: 'transparent' }}
+            style={{
+              backgroundColor: paperColor,
+              color: subtleInkColor,
+              shadowColor: "transparent",
+            }}
+            largeStyle={{
+              backgroundColor: paperColor,
+              shadowColor: "transparent",
+            }}
           />
-          <Stack.Screen.Title style={{ color: subtleInkColor === '#555555' ? '#111111' : '#f5f5f5' }}>
+          <Stack.Screen.Title
+            style={{
+              color: subtleInkColor === "#555555" ? "#111111" : "#f5f5f5",
+            }}
+          >
             Settings
           </Stack.Screen.Title>
         </>
@@ -109,18 +126,18 @@ export default function SettingsScreen() {
       <ScrollView
         style={{ flex: 1, backgroundColor: paperColor }}
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{ paddingTop: isIos ? 10 : 0, paddingBottom: 48, gap: 28 }}>
+        contentContainerStyle={{
+          paddingTop: isIos ? 10 : 0,
+          paddingBottom: 48,
+          gap: 28,
+        }}
+      >
         {isIos ? null : (
           <TabFallbackHeader
             title="Settings"
             subtitle="Personalize and manage your saved lines."
           />
         )}
-
-        <View style={{ paddingHorizontal: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          <TabStatPill label={themePreference === 'system' ? 'Following system' : `${themePreference} mode`} />
-          <TabStatPill label={`${favorites.size} favorite${favorites.size === 1 ? '' : 's'}`} />
-        </View>
 
         <View style={{ gap: 10 }}>
           <TabSectionHeader title="Appearance" />
@@ -129,7 +146,11 @@ export default function SettingsScreen() {
               <TabCardRow
                 key={option.value}
                 title={option.label}
-                subtitle={option.value === 'system' ? 'Match the device appearance.' : undefined}
+                subtitle={
+                  option.value === "system"
+                    ? "Match the device appearance."
+                    : undefined
+                }
                 leadingIcon={option.icon}
                 selected={themePreference === option.value}
                 isLast={index === APPEARANCE_OPTIONS.length - 1}
@@ -173,7 +194,9 @@ export default function SettingsScreen() {
                       }}
                     />
                   ) : (
-                    <Chevron tintColor={row.destructive ? accentColor : subtleInkColor} />
+                    <Chevron
+                      tintColor={row.destructive ? accentColor : subtleInkColor}
+                    />
                   )
                 }
               />
@@ -211,11 +234,13 @@ function SelectedBadge({ label }: { label: string }) {
         paddingHorizontal: 10,
         paddingVertical: 6,
         borderRadius: 999,
-        borderCurve: 'continuous',
-      }}>
+        borderCurve: "continuous",
+      }}
+    >
       <Text
         className="text-[12px] font-bold uppercase tracking-[0.8px]"
-        style={{ color: accentColor }}>
+        style={{ color: accentColor }}
+      >
         {label}
       </Text>
     </View>
@@ -223,7 +248,7 @@ function SelectedBadge({ label }: { label: string }) {
 }
 
 function Chevron({ tintColor }: { tintColor: string }) {
-  if (Platform.OS === 'ios') {
+  if (Platform.OS === "ios") {
     return (
       <Image
         contentFit="contain"
@@ -234,5 +259,12 @@ function Chevron({ tintColor }: { tintColor: string }) {
     );
   }
 
-  return <SymbolView name="chevron.right" size={12} tintColor={tintColor} weight="semibold" />;
+  return (
+    <SymbolView
+      name="chevron.right"
+      size={12}
+      tintColor={tintColor}
+      weight="semibold"
+    />
+  );
 }

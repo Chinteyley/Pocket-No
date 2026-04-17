@@ -1,13 +1,15 @@
-import { allReasons, type ReasonEntry } from './reason-catalog';
+import type { SFSymbol } from "expo-symbols";
+
+import { allReasons, type ReasonEntry } from "./reason-catalog";
 
 export const CATEGORY_IDS = [
-  'work',
-  'social',
-  'tired',
-  'self-care',
-  'absurd',
-  'savage',
-  'polite',
+  "work",
+  "social",
+  "tired",
+  "self-care",
+  "absurd",
+  "savage",
+  "polite",
 ] as const;
 
 export type CategoryId = (typeof CATEGORY_IDS)[number];
@@ -16,56 +18,64 @@ export type Category = {
   id: CategoryId;
   label: string;
   description: string;
+  icon: SFSymbol;
   pattern: RegExp;
 };
 
 export const CATEGORIES: readonly Category[] = [
   {
-    id: 'work',
-    label: 'Work',
-    description: 'Meetings, deadlines, calendars, and bandwidth.',
+    id: "work",
+    label: "Work",
+    description: "Meetings, deadlines, calendars, and bandwidth.",
+    icon: "briefcase.fill",
     pattern:
       /\b(calendar|deadline|meeting|email|bandwidth|slack|pto|workload|project|office|boss|client|standup|sprint|backlog|capacity|roadmap|quarter|q[1-4]|ooo|overtime)\b/i,
   },
   {
-    id: 'social',
-    label: 'Social',
-    description: 'Plans, parties, outings, and invitations.',
+    id: "social",
+    label: "Social",
+    description: "Plans, parties, outings, and invitations.",
+    icon: "person.2.fill",
     pattern:
       /\b(party|parties|brunch|dinner|drinks?|birthday|wedding|hangout|plans?|gathering|invite|invitation|rsvp|group chat|small talk|event|night out|bar|club)\b/i,
   },
   {
-    id: 'tired',
-    label: 'Tired',
-    description: 'Exhausted, overextended, running on empty.',
+    id: "tired",
+    label: "Tired",
+    description: "Exhausted, overextended, running on empty.",
+    icon: "bed.double.fill",
     pattern:
       /\b(tired|exhausted|drained|sleep|nap|rest|bed|couch|empty|depleted|knackered|spent|burnt|burnout|wiped|fried|sluggish|weary)\b/i,
   },
   {
-    id: 'self-care',
-    label: 'Self-care',
-    description: 'Boundaries, quiet, and nervous-system protection.',
+    id: "self-care",
+    label: "Self-care",
+    description: "Boundaries, quiet, and nervous-system protection.",
+    icon: "heart.fill",
     pattern:
       /\b(peace|quiet|recovery|boundaries?|nervous system|self[- ]care|mental health|healing|recharging|sanity|limits?|calm|protect(ing)? (my|tonight|tomorrow)|balance)\b/i,
   },
   {
-    id: 'absurd',
-    label: 'Absurd',
-    description: 'Sci-fi, surreal, and delightfully unhinged.',
+    id: "absurd",
+    label: "Absurd",
+    description: "Sci-fi, surreal, and delightfully unhinged.",
+    icon: "sparkles",
     pattern:
       /\b(multiverse|parallel universe|time loop|timeline|portal|dimension|wizard|unicorn|dragon|alien|spaceship|black hole|simulation|matrix|void|existential|cosmic|ghost|haunted|prophecy)\b/i,
   },
   {
-    id: 'savage',
-    label: 'Savage',
-    description: 'Sharp, blunt, unapologetic refusals.',
+    id: "savage",
+    label: "Savage",
+    description: "Sharp, blunt, unapologetic refusals.",
+    icon: "flame.fill",
     pattern:
       /\b(absolutely not|nope|hard pass|not a chance|never|regret|resent|lying|mistake|disaster|awful|terrible|doomed|no thanks)\b/i,
   },
   {
-    id: 'polite',
-    label: 'Polite',
-    description: 'Soft, respectful, graceful declines.',
+    id: "polite",
+    label: "Polite",
+    description: "Soft, respectful, graceful declines.",
+    icon: "hand.wave.fill",
     pattern:
       /\b(graceful|respect|appreciate|kindly|honored|flattered|lovely|beautifully|thank you|thoughtful|warmth|with love|apologi[sz]e)\b/i,
   },

@@ -1,21 +1,30 @@
-import React from 'react';
-import { Alert, SectionList, Text, View, type SectionListRenderItemInfo } from 'react-native';
-import Stack from 'expo-router/stack';
+import React from "react";
+import {
+  Alert,
+  SectionList,
+  Text,
+  View,
+  type SectionListRenderItemInfo,
+} from "react-native";
+import Stack from "expo-router/stack";
 
-import { ReasonRow } from '@/components/no/reason-row';
+import { ReasonRow } from "@/components/no/reason-row";
 import {
   TabEmptyState,
   TabFallbackHeader,
   TabSectionHeader,
-  TabStatPill,
   useTabScreenColors,
-} from '@/components/no/tab-screen-shell';
-import { useFavorites } from '@/features/no/favorites-store';
-import { clearHistory, useHistory } from '@/features/no/history-store';
-import { allReasons, getReasonById, type ReasonEntry } from '@/features/no/reason-catalog';
+} from "@/components/no/tab-screen-shell";
+import { useFavorites } from "@/features/no/favorites-store";
+import { clearHistory, useHistory } from "@/features/no/history-store";
+import {
+  allReasons,
+  getReasonById,
+  type ReasonEntry,
+} from "@/features/no/reason-catalog";
 
 interface FavoritesSection {
-  key: 'favorites' | 'recent';
+  key: "favorites" | "recent";
   title: string;
   data: ReasonEntry[];
   clearAction?: () => void;
@@ -25,7 +34,7 @@ export default function FavoritesScreen() {
   const favorites = useFavorites();
   const history = useHistory();
   const { paperColor, subtleInkColor } = useTabScreenColors();
-  const isIos = process.env.EXPO_OS === 'ios';
+  const isIos = process.env.EXPO_OS === "ios";
 
   const favoriteEntries: ReasonEntry[] = React.useMemo(() => {
     if (favorites.size === 0) return [];
@@ -47,21 +56,31 @@ export default function FavoritesScreen() {
     return out;
   }, [history, favorites]);
 
-  const sections: FavoritesSection[] = [{ key: 'favorites', title: 'Favorites', data: favoriteEntries }];
+  const sections: FavoritesSection[] = [
+    {
+      key: "favorites",
+      title: `Favorites - ${favoriteEntries.length}`,
+      data: favoriteEntries,
+    },
+  ];
 
   if (recentEntries.length > 0) {
     sections.push({
-      key: 'recent',
-      title: 'Recently copied',
+      key: "recent",
+      title: `Recently copied - ${recentEntries.length}`,
       data: recentEntries,
       clearAction: () => {
         Alert.alert(
-          'Clear recent history?',
-          'This removes the list of recently copied lines from this device.',
+          "Clear recent history?",
+          "This removes the list of recently copied lines from this device.",
           [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Clear', style: 'destructive', onPress: () => clearHistory() },
-          ]
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Clear",
+              style: "destructive",
+              onPress: () => clearHistory(),
+            },
+          ],
         );
       },
     });
@@ -71,21 +90,19 @@ export default function FavoritesScreen() {
     ({ item }: SectionListRenderItemInfo<ReasonEntry, FavoritesSection>) => (
       <ReasonRow entry={item} />
     ),
-    []
+    [],
   );
   const keyExtractor = React.useCallback(
     (item: ReasonEntry, index: number) => `${item.id}-${index}`,
-    []
+    [],
   );
 
   const favoriteCount = favoriteEntries.length;
   const recentCount = recentEntries.length;
   const headerSubtitle =
-    favoriteCount === 0
-      ? recentCount > 0
-        ? `${recentCount} recently copied`
-        : 'Tap the heart on any line to save it here.'
-      : `${favoriteCount} saved${recentCount > 0 ? ` · ${recentCount} recent` : ''}`;
+    favoriteCount === 0 && recentCount === 0
+      ? "Tap the heart on any line to save it here."
+      : "Saved lines and recently copied ones live here.";
 
   const isCompletelyEmpty = favoriteCount === 0 && recentCount === 0;
 
@@ -94,10 +111,21 @@ export default function FavoritesScreen() {
       {isIos ? (
         <>
           <Stack.Header
-            style={{ backgroundColor: paperColor, color: subtleInkColor, shadowColor: 'transparent' }}
-            largeStyle={{ backgroundColor: paperColor, shadowColor: 'transparent' }}
+            style={{
+              backgroundColor: paperColor,
+              color: subtleInkColor,
+              shadowColor: "transparent",
+            }}
+            largeStyle={{
+              backgroundColor: paperColor,
+              shadowColor: "transparent",
+            }}
           />
-          <Stack.Screen.Title style={{ color: subtleInkColor === '#555555' ? '#111111' : '#f5f5f5' }}>
+          <Stack.Screen.Title
+            style={{
+              color: subtleInkColor === "#555555" ? "#111111" : "#f5f5f5",
+            }}
+          >
             Favorites
           </Stack.Screen.Title>
         </>
@@ -116,26 +144,33 @@ export default function FavoritesScreen() {
         updateCellsBatchingPeriod={50}
         removeClippedSubviews
         ListHeaderComponent={
-          <View style={{ paddingTop: isIos ? 10 : 0, paddingBottom: 14, gap: 12 }}>
-            {isIos ? null : (
+          isIos ? (
+            <View style={{ paddingTop: 10, paddingBottom: 14 }} />
+          ) : (
+            <View style={{ paddingTop: 0, paddingBottom: 14, gap: 12 }}>
               <TabFallbackHeader title="Favorites" subtitle={headerSubtitle} />
-            )}
-            <View style={{ paddingHorizontal: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              <TabStatPill label={`${favoriteCount} saved`} />
-              <TabStatPill label={`${recentCount} recent`} />
             </View>
-          </View>
+          )
         }
         renderSectionHeader={({ section }) => {
-          if (section.key === 'favorites' && favoriteCount === 0 && recentCount === 0) {
+          if (
+            section.key === "favorites" &&
+            favoriteCount === 0 &&
+            recentCount === 0
+          ) {
             return null;
           }
 
           return (
-            <View style={{ paddingTop: section.key === 'favorites' ? 0 : 18, paddingBottom: 8 }}>
+            <View
+              style={{
+                paddingTop: section.key === "favorites" ? 0 : 18,
+                paddingBottom: 8,
+              }}
+            >
               <TabSectionHeader
                 title={section.title}
-                actionLabel={section.clearAction ? 'Clear' : undefined}
+                actionLabel={section.clearAction ? "Clear" : undefined}
                 actionAccessibilityLabel="Clear recent history"
                 onActionPress={section.clearAction}
               />
@@ -143,7 +178,7 @@ export default function FavoritesScreen() {
           );
         }}
         renderSectionFooter={({ section }) => {
-          if (section.key === 'favorites' && isCompletelyEmpty) {
+          if (section.key === "favorites" && isCompletelyEmpty) {
             return (
               <TabEmptyState
                 icon="heart"
@@ -153,10 +188,23 @@ export default function FavoritesScreen() {
             );
           }
 
-          if (section.key === 'favorites' && section.data.length === 0 && recentCount > 0) {
+          if (
+            section.key === "favorites" &&
+            section.data.length === 0 &&
+            recentCount > 0
+          ) {
             return (
-              <View style={{ paddingHorizontal: 16, paddingBottom: 6, paddingTop: 2 }}>
-                <Text className="text-[14px] leading-[20px]" style={{ color: subtleInkColor }}>
+              <View
+                style={{
+                  paddingHorizontal: 16,
+                  paddingBottom: 6,
+                  paddingTop: 2,
+                }}
+              >
+                <Text
+                  className="text-[14px] leading-5"
+                  style={{ color: subtleInkColor }}
+                >
                   Tap the heart on any line to pin it here.
                 </Text>
               </View>
