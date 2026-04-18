@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { SymbolView, type SFSymbol } from "expo-symbols";
 import React from "react";
 import { Alert, Platform, ScrollView, Text, View } from "react-native";
+import Stack from "expo-router/stack";
 
 import {
   TabCardGroup,
@@ -45,6 +46,7 @@ export default function SettingsScreen() {
   const themePreference = useThemePreference();
   const {
     paperColor,
+    inkColor,
     subtleInkColor,
     accentColor,
     surfaceMutedColor,
@@ -100,6 +102,28 @@ export default function SettingsScreen() {
 
   return (
     <>
+      {isIos ? (
+        <>
+          <Stack.Header
+            style={{
+              backgroundColor: paperColor,
+              color: inkColor,
+              shadowColor: "transparent",
+            }}
+            largeStyle={{
+              backgroundColor: paperColor,
+              shadowColor: "transparent",
+            }}
+          />
+          <Stack.Screen.Title
+            large
+            style={{ color: inkColor }}
+            largeStyle={{ color: inkColor }}
+          >
+            Settings
+          </Stack.Screen.Title>
+        </>
+      ) : null}
       <ScrollView
         style={{ flex: 1, backgroundColor: paperColor }}
         contentInsetAdjustmentBehavior="automatic"

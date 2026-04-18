@@ -6,6 +6,8 @@ import {
   View,
   type SectionListRenderItemInfo,
 } from "react-native";
+import Stack from "expo-router/stack";
+
 import { ReasonRow } from "@/components/no/reason-row";
 import {
   TabEmptyState,
@@ -31,7 +33,7 @@ interface FavoritesSection {
 export default function FavoritesScreen() {
   const favorites = useFavorites();
   const history = useHistory();
-  const { paperColor, subtleInkColor } = useTabScreenColors();
+  const { paperColor, inkColor, subtleInkColor } = useTabScreenColors();
   const isIos = process.env.EXPO_OS === "ios";
 
   const favoriteEntries: ReasonEntry[] = React.useMemo(() => {
@@ -106,6 +108,28 @@ export default function FavoritesScreen() {
 
   return (
     <>
+      {isIos ? (
+        <>
+          <Stack.Header
+            style={{
+              backgroundColor: paperColor,
+              color: inkColor,
+              shadowColor: "transparent",
+            }}
+            largeStyle={{
+              backgroundColor: paperColor,
+              shadowColor: "transparent",
+            }}
+          />
+          <Stack.Screen.Title
+            large
+            style={{ color: inkColor }}
+            largeStyle={{ color: inkColor }}
+          >
+            Favorites
+          </Stack.Screen.Title>
+        </>
+      ) : null}
       <SectionList
         style={{ flex: 1, backgroundColor: paperColor }}
         contentInsetAdjustmentBehavior="automatic"
