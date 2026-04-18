@@ -9,14 +9,12 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { Stack } from "expo-router/stack";
 import React from "react";
-import { useColorScheme } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   SafeAreaListener,
   SafeAreaProvider,
 } from "react-native-safe-area-context";
-import { Uniwind, useCSSVariable } from "uniwind";
-import { useThemePreference } from "@/features/theme/theme-preference-store";
+import { Uniwind, useCSSVariable, useUniwind } from "uniwind";
 
 function WebRootLayout() {
   return (
@@ -43,10 +41,7 @@ function WebRootLayout() {
 function NativeRootLayout() {
   const paperColor = (useCSSVariable("--color-paper") as string) ?? "#ffffff";
   const inkColor = (useCSSVariable("--color-ink") as string) ?? "#111111";
-  const themePreference = useThemePreference();
-  const systemColorScheme = useColorScheme();
-  const resolvedColorScheme =
-    themePreference === "system" ? systemColorScheme : themePreference;
+  const { theme: resolvedColorScheme } = useUniwind();
   const navigationTheme = React.useMemo(
     () =>
       resolvedColorScheme === "dark"

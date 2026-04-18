@@ -37,6 +37,7 @@ function CopyScreenContent({
 }) {
   const colorScheme = useColorScheme();
   const inkColor = useCSSVariable('--color-ink') as string;
+  const outlineColor = useCSSVariable('--color-outline') as string;
   const insets = useSafeAreaInsets();
   const [reason, setReason] = React.useState<NoReason | null>(null);
   const [state, setState] = React.useState<CopyFlowState>('loading');
@@ -144,6 +145,23 @@ function CopyScreenContent({
           </View>
         </View>
 
+        {reason && state !== 'error' ? (
+          <View className="mt-4 items-center">
+            <GlassCapsule padding={4} style={{ gap: 4 }}>
+              <FavoriteButton id={reason.id} size={20} padding={10} />
+              <View
+                style={{
+                  width: 1,
+                  height: 20,
+                  backgroundColor: outlineColor,
+                  alignSelf: 'center',
+                }}
+              />
+              <ShareButton text={reason.copiedText ?? reason.text} size={20} padding={10} />
+            </GlassCapsule>
+          </View>
+        ) : null}
+
         <View
           className="mt-4 rounded-[20px] w-full overflow-hidden"
           style={{ borderCurve: 'continuous' }}>
@@ -160,15 +178,6 @@ function CopyScreenContent({
             tone="primary"
           />
         </View>
-
-        {reason && state !== 'error' ? (
-          <View className="mt-3 items-center">
-            <GlassCapsule padding={4} style={{ gap: 2 }}>
-              <FavoriteButton id={reason.id} size={22} padding={10} />
-              <ShareButton text={reason.copiedText ?? reason.text} size={22} padding={10} />
-            </GlassCapsule>
-          </View>
-        ) : null}
       </View>
     </View>
   );
