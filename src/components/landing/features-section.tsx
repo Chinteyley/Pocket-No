@@ -20,7 +20,7 @@ const FEATURES = [
   {
     title: 'Curated',
     description:
-      '300+ thoughtful lines. Browse by mood, save your favorites, and personalize new ones with Apple Intelligence.',
+      '1,000+ thoughtful lines. Browse by mood, save your favorites, and personalize new ones with Apple Intelligence.',
   },
   {
     title: 'Everywhere',
