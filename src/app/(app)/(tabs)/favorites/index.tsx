@@ -33,7 +33,7 @@ interface FavoritesSection {
 export default function FavoritesScreen() {
   const favorites = useFavorites();
   const history = useHistory();
-  const { paperColor, inkColor, subtleInkColor } = useTabScreenColors();
+  const { paperColor, subtleInkColor } = useTabScreenColors();
   const isIos = process.env.EXPO_OS === "ios";
 
   const favoriteEntries: ReasonEntry[] = React.useMemo(() => {
@@ -107,51 +107,30 @@ export default function FavoritesScreen() {
   const isCompletelyEmpty = favoriteCount === 0 && recentCount === 0;
 
   return (
-    <>
-      {isIos ? (
-        <>
-          <Stack.Header
-            style={{
-              backgroundColor: paperColor,
-              color: inkColor,
-              shadowColor: "transparent",
-            }}
-            largeStyle={{
-              backgroundColor: paperColor,
-              shadowColor: "transparent",
-            }}
-          />
-          <Stack.Screen.Title
-            large
-            style={{ color: inkColor }}
-            largeStyle={{ color: inkColor }}
-          >
-            Favorites
-          </Stack.Screen.Title>
-        </>
-      ) : null}
-      <SectionList
-        style={{ flex: 1, backgroundColor: paperColor }}
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{ paddingBottom: 32 }}
-        sections={sections}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        stickySectionHeadersEnabled={false}
-        initialNumToRender={10}
-        windowSize={7}
-        maxToRenderPerBatch={6}
-        updateCellsBatchingPeriod={50}
-        removeClippedSubviews
-        ListHeaderComponent={
-          isIos ? (
-            <View style={{ paddingTop: 2, paddingBottom: 10 }} />
-          ) : (
-            <View style={{ paddingTop: 0, paddingBottom: 14, gap: 12 }}>
-              <TabFallbackHeader title="Favorites" subtitle={headerSubtitle} />
-            </View>
-          )
-        }
+    <SectionList
+      style={{ flex: 1, backgroundColor: paperColor }}
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{ paddingBottom: 32 }}
+      sections={sections}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      stickySectionHeadersEnabled={false}
+      initialNumToRender={10}
+      windowSize={7}
+      maxToRenderPerBatch={6}
+      updateCellsBatchingPeriod={50}
+      removeClippedSubviews
+      ListHeaderComponent={
+        isIos ? (
+          <View style={{ paddingBottom: 10 }}>
+            <Stack.Screen.Title large>Favorites</Stack.Screen.Title>
+          </View>
+        ) : (
+          <View style={{ paddingTop: 0, paddingBottom: 14, gap: 12 }}>
+            <TabFallbackHeader title="Favorites" subtitle={headerSubtitle} />
+          </View>
+        )
+      }
         renderSectionHeader={({ section }) => {
           if (
             section.key === "favorites" &&
@@ -177,10 +156,10 @@ export default function FavoritesScreen() {
             </View>
           );
         }}
-        renderSectionFooter={({ section }) => {
-          if (section.key === "favorites" && isCompletelyEmpty) {
-            return (
-              <TabEmptyState
+      renderSectionFooter={({ section }) => {
+        if (section.key === "favorites" && isCompletelyEmpty) {
+          return (
+            <TabEmptyState
                 icon="heart"
                 title="No favorites yet"
                 description="Tap the heart on any line — in Browse, on Home, or in the Copy sheet. Saved lines live here, even offline."
@@ -213,7 +192,6 @@ export default function FavoritesScreen() {
 
           return null;
         }}
-      />
-    </>
+    />
   );
 }

@@ -2,9 +2,8 @@ import Stack from "expo-router/stack";
 import { useCSSVariable } from "uniwind";
 
 export default function FavoritesTabLayout() {
-  const paperColor = (useCSSVariable("--color-paper") as string) ?? "#ffffff";
-  const inkColor = (useCSSVariable("--color-ink") as string) ?? "#111111";
   const isIos = process.env.EXPO_OS === "ios";
+  const paperColor = (useCSSVariable("--color-paper") as string) ?? "#ffffff";
 
   return (
     <Stack
@@ -14,11 +13,6 @@ export default function FavoritesTabLayout() {
         headerShadowVisible: false,
         headerLargeTitleShadowVisible: false,
         headerBackButtonDisplayMode: "minimal",
-        headerStyle: { backgroundColor: "transparent" },
-        headerLargeStyle: { backgroundColor: "transparent" },
-        headerTintColor: inkColor,
-        headerTitleStyle: { color: inkColor },
-        headerLargeTitleStyle: { color: inkColor },
         contentStyle: { backgroundColor: paperColor },
       }}
     >

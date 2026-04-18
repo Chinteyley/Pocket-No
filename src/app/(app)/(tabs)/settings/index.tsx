@@ -1,9 +1,9 @@
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { SymbolView, type SFSymbol } from "expo-symbols";
+import Stack from "expo-router/stack";
 import React from "react";
 import { Alert, Platform, ScrollView, Text, View } from "react-native";
-import Stack from "expo-router/stack";
 
 import {
   TabCardGroup,
@@ -46,7 +46,6 @@ export default function SettingsScreen() {
   const themePreference = useThemePreference();
   const {
     paperColor,
-    inkColor,
     subtleInkColor,
     accentColor,
     surfaceMutedColor,
@@ -101,44 +100,22 @@ export default function SettingsScreen() {
   ];
 
   return (
-    <>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: paperColor }}
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{
+        paddingBottom: 48,
+        gap: 28,
+      }}
+    >
       {isIos ? (
-        <>
-          <Stack.Header
-            style={{
-              backgroundColor: paperColor,
-              color: inkColor,
-              shadowColor: "transparent",
-            }}
-            largeStyle={{
-              backgroundColor: paperColor,
-              shadowColor: "transparent",
-            }}
-          />
-          <Stack.Screen.Title
-            large
-            style={{ color: inkColor }}
-            largeStyle={{ color: inkColor }}
-          >
-            Settings
-          </Stack.Screen.Title>
-        </>
-      ) : null}
-      <ScrollView
-        style={{ flex: 1, backgroundColor: paperColor }}
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{
-          paddingTop: isIos ? 2 : 0,
-          paddingBottom: 48,
-          gap: 28,
-        }}
-      >
-        {isIos ? null : (
-          <TabFallbackHeader
-            title="Settings"
-            subtitle="Personalize and manage your saved lines."
-          />
-        )}
+        <Stack.Screen.Title large>Settings</Stack.Screen.Title>
+      ) : (
+        <TabFallbackHeader
+          title="Settings"
+          subtitle="Personalize and manage your saved lines."
+        />
+      )}
 
         <View style={{ gap: 10 }}>
           <TabSectionHeader title="Appearance" />
@@ -220,8 +197,7 @@ export default function SettingsScreen() {
             ))}
           </TabCardGroup>
         </View>
-      </ScrollView>
-    </>
+    </ScrollView>
   );
 }
 

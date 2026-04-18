@@ -85,33 +85,6 @@ export default function BrowseScreen() {
 
   return (
     <>
-      {isIos ? (
-        <>
-          <Stack.Header
-            style={{
-              backgroundColor: paperColor,
-              color: inkColor,
-              shadowColor: "transparent",
-            }}
-            largeStyle={{
-              backgroundColor: paperColor,
-              shadowColor: "transparent",
-            }}
-          />
-          <Stack.Screen.Title style={{ color: inkColor }}>
-            Browse
-          </Stack.Screen.Title>
-          <Stack.SearchBar
-            ref={searchBarRef}
-            placeholder="Search 1,000+ ways to say no"
-            placement="stacked"
-            hideWhenScrolling={false}
-            onChangeText={(event) => setQuery(event.nativeEvent.text ?? "")}
-            onCancelButtonPress={() => setQuery("")}
-            autoCapitalize="none"
-          />
-        </>
-      ) : null}
       <FlatList
         style={{ flex: 1, backgroundColor: paperColor }}
         contentInsetAdjustmentBehavior="automatic"
@@ -127,43 +100,41 @@ export default function BrowseScreen() {
         updateCellsBatchingPeriod={50}
         removeClippedSubviews
         ListHeaderComponent={
-          <View
-            style={{ paddingTop: isIos ? 10 : 0, paddingBottom: 12, gap: 12 }}
-          >
-            {isIos ? null : (
-              <TabFallbackHeader title="Browse" subtitle={countLabel} />
-            )}
-            {isIos ? null : (
-              <View
-                style={{ paddingHorizontal: 20, paddingTop: isIos ? 2 : 12 }}
-              >
-                <View
-                  style={{
-                    backgroundColor: surfaceMutedColor,
-                    borderRadius: 14,
-                    borderCurve: "continuous",
-                    paddingHorizontal: 14,
-                  }}
-                >
-                  <TextInput
-                    accessibilityLabel="Search refusals"
-                    placeholder="Search 1,000+ ways to say no"
-                    placeholderTextColor={subtleInkColor}
-                    selectionColor={accentColor}
-                    cursorColor={accentColor}
-                    value={query}
-                    onChangeText={setQuery}
-                    autoCorrect={false}
-                    autoCapitalize="none"
-                    clearButtonMode="while-editing"
+          <View style={{ paddingTop: 0, paddingBottom: 12, gap: 12 }}>
+            {isIos ? (
+              <Stack.Screen.Title large>Browse</Stack.Screen.Title>
+            ) : (
+              <>
+                <TabFallbackHeader title="Browse" subtitle={countLabel} />
+                <View style={{ paddingHorizontal: 20, paddingTop: 12 }}>
+                  <View
                     style={{
-                      color: inkColor,
-                      fontSize: 16,
-                      paddingVertical: 12,
+                      backgroundColor: surfaceMutedColor,
+                      borderRadius: 14,
+                      borderCurve: "continuous",
+                      paddingHorizontal: 14,
                     }}
-                  />
+                  >
+                    <TextInput
+                      accessibilityLabel="Search refusals"
+                      placeholder="Search 1,000+ ways to say no"
+                      placeholderTextColor={subtleInkColor}
+                      selectionColor={accentColor}
+                      cursorColor={accentColor}
+                      value={query}
+                      onChangeText={setQuery}
+                      autoCorrect={false}
+                      autoCapitalize="none"
+                      clearButtonMode="while-editing"
+                      style={{
+                        color: inkColor,
+                        fontSize: 16,
+                        paddingVertical: 12,
+                      }}
+                    />
+                  </View>
                 </View>
-              </View>
+              </>
             )}
             <CategoryChips selected={category} onSelect={setCategory} />
             <View
@@ -212,6 +183,21 @@ export default function BrowseScreen() {
             }
           />
         }
+      />
+      <Stack.Screen
+        options={{
+          headerSearchBarOptions: isIos
+            ? {
+                ref: searchBarRef,
+                placeholder: "Search 1,000+ ways to say no",
+                hideWhenScrolling: false,
+                autoCapitalize: "none",
+                onChangeText: (event) =>
+                  setQuery(event.nativeEvent.text ?? ""),
+                onCancelButtonPress: () => setQuery(""),
+              }
+            : undefined,
+        }}
       />
     </>
   );

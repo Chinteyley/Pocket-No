@@ -1,9 +1,15 @@
 import { Tabs } from 'expo-router';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from '@react-navigation/native';
 import { Image } from 'expo-image';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
-import { Platform } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 import { useCSSVariable } from 'uniwind';
+import { useThemePreference } from '@/features/theme/theme-preference-store';
 
 function TabIcon({ name, color, size }: { name: SFSymbol; color: string; size: number }) {
   if (Platform.OS === 'ios') {
@@ -21,26 +27,33 @@ function TabIcon({ name, color, size }: { name: SFSymbol; color: string; size: n
 }
 
 export default function TabsLayout() {
+  const themePreference = useThemePreference();
+  const systemColorScheme = useColorScheme();
+  const resolvedColorScheme =
+    themePreference === 'system' ? systemColorScheme : themePreference;
+
   if (process.env.EXPO_OS === 'ios') {
     return (
-      <NativeTabs>
-        <NativeTabs.Trigger name="index">
-          <NativeTabs.Trigger.Icon sf="house.fill" />
-          <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="browse">
-          <NativeTabs.Trigger.Icon sf="square.grid.2x2.fill" />
-          <NativeTabs.Trigger.Label>Browse</NativeTabs.Trigger.Label>
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="favorites">
-          <NativeTabs.Trigger.Icon sf="heart.fill" />
-          <NativeTabs.Trigger.Label>Favorites</NativeTabs.Trigger.Label>
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="settings">
-          <NativeTabs.Trigger.Icon sf="gearshape.fill" />
-          <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
-        </NativeTabs.Trigger>
-      </NativeTabs>
+      <ThemeProvider value={resolvedColorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <NativeTabs>
+          <NativeTabs.Trigger name="index">
+            <NativeTabs.Trigger.Icon sf="house.fill" />
+            <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+          </NativeTabs.Trigger>
+          <NativeTabs.Trigger name="browse">
+            <NativeTabs.Trigger.Icon sf="square.grid.2x2.fill" />
+            <NativeTabs.Trigger.Label>Browse</NativeTabs.Trigger.Label>
+          </NativeTabs.Trigger>
+          <NativeTabs.Trigger name="favorites">
+            <NativeTabs.Trigger.Icon sf="heart.fill" />
+            <NativeTabs.Trigger.Label>Favorites</NativeTabs.Trigger.Label>
+          </NativeTabs.Trigger>
+          <NativeTabs.Trigger name="settings">
+            <NativeTabs.Trigger.Icon sf="gearshape.fill" />
+            <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
+          </NativeTabs.Trigger>
+        </NativeTabs>
+      </ThemeProvider>
     );
   }
 
