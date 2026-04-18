@@ -121,7 +121,11 @@ export default function FavoritesScreen() {
               shadowColor: "transparent",
             }}
           />
-          <Stack.Screen.Title large style={{ color: inkColor }}>
+          <Stack.Screen.Title
+            large
+            style={{ color: inkColor }}
+            largeStyle={{ color: inkColor }}
+          >
             Favorites
           </Stack.Screen.Title>
         </>

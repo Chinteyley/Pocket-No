@@ -46,6 +46,7 @@ export default function SettingsScreen() {
   const themePreference = useThemePreference();
   const {
     paperColor,
+    inkColor,
     subtleInkColor,
     accentColor,
     surfaceMutedColor,
@@ -104,26 +105,20 @@ export default function SettingsScreen() {
       {isIos ? (
         <>
           <Stack.Header
-            transparent
-            blurEffect="systemMaterial"
             style={{
-              backgroundColor: "transparent",
-              color: subtleInkColor,
+              backgroundColor: paperColor,
+              color: inkColor,
               shadowColor: "transparent",
             }}
             largeStyle={{
-              backgroundColor: "transparent",
+              backgroundColor: paperColor,
               shadowColor: "transparent",
             }}
           />
           <Stack.Screen.Title
             large
-            style={{
-              color: subtleInkColor === "#555555" ? "#111111" : "#f5f5f5",
-            }}
-            largeStyle={{
-              color: subtleInkColor === "#555555" ? "#111111" : "#f5f5f5",
-            }}
+            style={{ color: inkColor }}
+            largeStyle={{ color: inkColor }}
           >
             Settings
           </Stack.Screen.Title>
