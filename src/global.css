@@ -12,7 +12,7 @@ body,
 @layer theme {
     :root {
         @variant light {
-            --color-paper: #ffffff;
+            --color-paper: #fff7ef;
             --color-surface: #ffffff;
             --color-surface-muted: #f5f5f5;
             --color-ink: #111111;

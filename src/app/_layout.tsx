@@ -1,15 +1,22 @@
 import "../global.css";
 import '@/lib/ai-polyfills';
 
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { Stack } from "expo-router/stack";
 import React from "react";
+import { useColorScheme } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   SafeAreaListener,
   SafeAreaProvider,
 } from "react-native-safe-area-context";
 import { Uniwind, useCSSVariable } from "uniwind";
+import { useThemePreference } from "@/features/theme/theme-preference-store";
 
 function WebRootLayout() {
   return (
@@ -35,6 +42,36 @@ function WebRootLayout() {
 
 function NativeRootLayout() {
   const paperColor = (useCSSVariable("--color-paper") as string) ?? "#ffffff";
+  const inkColor = (useCSSVariable("--color-ink") as string) ?? "#111111";
+  const themePreference = useThemePreference();
+  const systemColorScheme = useColorScheme();
+  const resolvedColorScheme =
+    themePreference === "system" ? systemColorScheme : themePreference;
+  const navigationTheme = React.useMemo(
+    () =>
+      resolvedColorScheme === "dark"
+        ? {
+            ...DarkTheme,
+            colors: {
+              ...DarkTheme.colors,
+              background: paperColor,
+              card: paperColor,
+              text: inkColor,
+              border: "transparent",
+            },
+          }
+        : {
+            ...DefaultTheme,
+            colors: {
+              ...DefaultTheme.colors,
+              background: paperColor,
+              card: paperColor,
+              text: inkColor,
+              border: "transparent",
+            },
+          },
+    [inkColor, paperColor, resolvedColorScheme],
+  );
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -44,15 +81,17 @@ function NativeRootLayout() {
             Uniwind.updateInsets(insets);
           }}
         >
-          <StatusBar style="auto" />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: paperColor },
-            }}
-          >
-            <Stack.Screen name="(app)" options={{ headerShown: false }} />
-          </Stack>
+          <ThemeProvider value={navigationTheme}>
+            <StatusBar style={resolvedColorScheme === "dark" ? "light" : "dark"} />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: paperColor },
+              }}
+            >
+              <Stack.Screen name="(app)" options={{ headerShown: false }} />
+            </Stack>
+          </ThemeProvider>
         </SafeAreaListener>
       </SafeAreaProvider>
     </GestureHandlerRootView>

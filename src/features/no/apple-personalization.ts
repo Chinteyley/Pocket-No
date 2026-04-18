@@ -108,7 +108,11 @@ export async function isAppleVoicePersonalizationAvailable() {
     await getPreparedAppleVoiceTranscriptionModel();
     return true;
   } catch (error) {
-    console.warn('Failed to check Apple voice personalization availability', error);
+    const message = error instanceof Error ? error.message : String(error);
+    // Expected on devices without on-device speech assets (e.g. simulator, unsupported locale).
+    if (!/assets not supported/i.test(message)) {
+      console.warn('Failed to check Apple voice personalization availability', error);
+    }
     return false;
   }
 }
