@@ -90,7 +90,7 @@ export function HeroSection({ isDesktop }: HeroSectionProps) {
               : 'max-w-[340px] text-[17px] leading-[26px]',
           )}
           style={{ ...FONT_BODY, ...staggerStyle(vis[3]) }}>
-          300+ perfectly crafted excuses, copied to your clipboard in one tap.
+          1,000+ perfectly crafted excuses, copied to your clipboard in one tap.
           Polite, witty, and ready when you need them.
         </Text>
       </View>
