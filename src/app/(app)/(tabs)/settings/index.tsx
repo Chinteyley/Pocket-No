@@ -104,18 +104,24 @@ export default function SettingsScreen() {
       {isIos ? (
         <>
           <Stack.Header
+            transparent
+            blurEffect="systemMaterial"
             style={{
-              backgroundColor: paperColor,
+              backgroundColor: "transparent",
               color: subtleInkColor,
               shadowColor: "transparent",
             }}
             largeStyle={{
-              backgroundColor: paperColor,
+              backgroundColor: "transparent",
               shadowColor: "transparent",
             }}
           />
           <Stack.Screen.Title
+            large
             style={{
+              color: subtleInkColor === "#555555" ? "#111111" : "#f5f5f5",
+            }}
+            largeStyle={{
               color: subtleInkColor === "#555555" ? "#111111" : "#f5f5f5",
             }}
           >
@@ -127,7 +133,7 @@ export default function SettingsScreen() {
         style={{ flex: 1, backgroundColor: paperColor }}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          paddingTop: isIos ? 10 : 0,
+          paddingTop: isIos ? 2 : 0,
           paddingBottom: 48,
           gap: 28,
         }}

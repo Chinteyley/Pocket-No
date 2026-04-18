@@ -33,7 +33,7 @@ interface FavoritesSection {
 export default function FavoritesScreen() {
   const favorites = useFavorites();
   const history = useHistory();
-  const { paperColor, subtleInkColor } = useTabScreenColors();
+  const { paperColor, inkColor, subtleInkColor } = useTabScreenColors();
   const isIos = process.env.EXPO_OS === "ios";
 
   const favoriteEntries: ReasonEntry[] = React.useMemo(() => {
@@ -113,7 +113,7 @@ export default function FavoritesScreen() {
           <Stack.Header
             style={{
               backgroundColor: paperColor,
-              color: subtleInkColor,
+              color: inkColor,
               shadowColor: "transparent",
             }}
             largeStyle={{
@@ -121,11 +121,7 @@ export default function FavoritesScreen() {
               shadowColor: "transparent",
             }}
           />
-          <Stack.Screen.Title
-            style={{
-              color: subtleInkColor === "#555555" ? "#111111" : "#f5f5f5",
-            }}
-          >
+          <Stack.Screen.Title large style={{ color: inkColor }}>
             Favorites
           </Stack.Screen.Title>
         </>
@@ -145,7 +141,7 @@ export default function FavoritesScreen() {
         removeClippedSubviews
         ListHeaderComponent={
           isIos ? (
-            <View style={{ paddingTop: 10, paddingBottom: 14 }} />
+            <View style={{ paddingTop: 2, paddingBottom: 10 }} />
           ) : (
             <View style={{ paddingTop: 0, paddingBottom: 14, gap: 12 }}>
               <TabFallbackHeader title="Favorites" subtitle={headerSubtitle} />

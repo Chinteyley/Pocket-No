@@ -7,6 +7,7 @@ import {
   type ListRenderItemInfo,
 } from "react-native";
 import Stack from "expo-router/stack";
+import type { SearchBarCommands } from "react-native-screens";
 
 import { CategoryChips } from "@/components/no/category-chips";
 import { ReasonRow } from "@/components/no/reason-row";
@@ -30,6 +31,7 @@ import {
 export default function BrowseScreen() {
   const [query, setQuery] = React.useState("");
   const [category, setCategory] = React.useState<CategoryId | null>(null);
+  const searchBarRef = React.useRef<SearchBarCommands | null>(null);
   const {
     paperColor,
     surfaceMutedColor,
@@ -99,6 +101,15 @@ export default function BrowseScreen() {
           <Stack.Screen.Title style={{ color: inkColor }}>
             Browse
           </Stack.Screen.Title>
+          <Stack.SearchBar
+            ref={searchBarRef}
+            placeholder="Search 1,000+ ways to say no"
+            placement="stacked"
+            hideWhenScrolling={false}
+            onChangeText={(event) => setQuery(event.nativeEvent.text ?? "")}
+            onCancelButtonPress={() => setQuery("")}
+            autoCapitalize="none"
+          />
         </>
       ) : null}
       <FlatList
@@ -122,34 +133,38 @@ export default function BrowseScreen() {
             {isIos ? null : (
               <TabFallbackHeader title="Browse" subtitle={countLabel} />
             )}
-            <View style={{ paddingHorizontal: 20, paddingTop: isIos ? 2 : 12 }}>
+            {isIos ? null : (
               <View
-                style={{
-                  backgroundColor: surfaceMutedColor,
-                  borderRadius: 14,
-                  borderCurve: "continuous",
-                  paddingHorizontal: 14,
-                }}
+                style={{ paddingHorizontal: 20, paddingTop: isIos ? 2 : 12 }}
               >
-                <TextInput
-                  accessibilityLabel="Search refusals"
-                  placeholder="Search 1,000+ ways to say no"
-                  placeholderTextColor={subtleInkColor}
-                  selectionColor={accentColor}
-                  cursorColor={accentColor}
-                  value={query}
-                  onChangeText={setQuery}
-                  autoCorrect={false}
-                  autoCapitalize="none"
-                  clearButtonMode="while-editing"
+                <View
                   style={{
-                    color: inkColor,
-                    fontSize: 16,
-                    paddingVertical: 12,
+                    backgroundColor: surfaceMutedColor,
+                    borderRadius: 14,
+                    borderCurve: "continuous",
+                    paddingHorizontal: 14,
                   }}
-                />
+                >
+                  <TextInput
+                    accessibilityLabel="Search refusals"
+                    placeholder="Search 1,000+ ways to say no"
+                    placeholderTextColor={subtleInkColor}
+                    selectionColor={accentColor}
+                    cursorColor={accentColor}
+                    value={query}
+                    onChangeText={setQuery}
+                    autoCorrect={false}
+                    autoCapitalize="none"
+                    clearButtonMode="while-editing"
+                    style={{
+                      color: inkColor,
+                      fontSize: 16,
+                      paddingVertical: 12,
+                    }}
+                  />
+                </View>
               </View>
-            </View>
+            )}
             <CategoryChips selected={category} onSelect={setCategory} />
             <View
               style={{
@@ -190,6 +205,8 @@ export default function BrowseScreen() {
                 ? () => {
                     setQuery("");
                     setCategory(null);
+                    searchBarRef.current?.clearText();
+                    searchBarRef.current?.cancelSearch();
                   }
                 : undefined
             }
