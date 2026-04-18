@@ -6,6 +6,7 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import { Analytics } from "@vercel/analytics/react";
 import { StatusBar } from "expo-status-bar";
 import { Stack } from "expo-router/stack";
 import React from "react";
@@ -33,6 +34,7 @@ function WebRootLayout() {
         >
           <Stack.Screen name="(app)" options={{ headerShown: false }} />
         </Stack>
+        <Analytics />
       </SafeAreaListener>
     </SafeAreaProvider>
   );
