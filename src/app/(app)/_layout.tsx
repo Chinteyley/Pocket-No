@@ -14,7 +14,7 @@ function WebAppLayout() {
   return (
     <>
       <Head>
-        <title>Pocket No</title>
+        <title>Pocket-No | Witty excuses, one tap away</title>
       </Head>
       <Stack
         screenOptions={{
@@ -27,7 +27,10 @@ function WebAppLayout() {
       >
         <Stack.Screen
           name="(tabs)"
-          options={{ headerShown: false, title: "Pocket No" }}
+          options={{
+            headerShown: false,
+            title: "Pocket-No | Witty excuses, one tap away",
+          }}
         />
         <Stack.Screen
           name="copy"

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Image, Text, View } from 'react-native';
+import { Image, Linking, Pressable, Text, View } from 'react-native';
 
+import { APP_STORE_URL } from '@/components/landing/app-store';
 import { cn } from '@/lib/cn';
 
 const FONT_DISPLAY = { fontFamily: 'Instrument Serif, serif' } as const;
@@ -46,7 +47,7 @@ function staggerStyle(isVisible: boolean) {
 }
 
 export function HeroSection({ isDesktop }: HeroSectionProps) {
-  const vis = useStaggeredEntrance(4, 80);
+  const vis = useStaggeredEntrance(5, 80);
 
   return (
     <View
@@ -68,7 +69,7 @@ export function HeroSection({ isDesktop }: HeroSectionProps) {
             isDesktop ? 'text-[20px]' : 'text-[17px]',
           )}
           style={{ ...FONT_BODY, fontWeight: '600', letterSpacing: 0.5, ...staggerStyle(vis[1]) }}>
-          Pocket No
+          Pocket-No
         </Text>
 
         <Text
@@ -79,7 +80,7 @@ export function HeroSection({ isDesktop }: HeroSectionProps) {
               : 'text-[42px] leading-[48px]',
           )}
           style={{ ...FONT_DISPLAY, letterSpacing: -1.5, ...staggerStyle(vis[2]) }}>
-          The art of{'\n'}saying no.
+          Witty excuses,{'\n'}one tap away.
         </Text>
 
         <Text
@@ -90,9 +91,42 @@ export function HeroSection({ isDesktop }: HeroSectionProps) {
               : 'max-w-[340px] text-[17px] leading-[26px]',
           )}
           style={{ ...FONT_BODY, ...staggerStyle(vis[3]) }}>
-          1,000+ perfectly crafted excuses, copied to your clipboard in one tap.
-          Polite, witty, and ready when you need them.
+          Open the app, get a fresh no, and copy it wherever the invite is
+          waiting. Now available on the App Store.
         </Text>
+
+        <View
+          className={cn('mt-7 items-center gap-4', isDesktop && 'flex-row')}
+          style={staggerStyle(vis[4])}>
+          <Pressable
+            accessibilityLabel="Download Pocket-No on the App Store"
+            accessibilityRole="link"
+            onPress={() => void Linking.openURL(APP_STORE_URL)}
+            className="items-center justify-center rounded-[16px] bg-button-primary px-8 py-4"
+            style={({ pressed, hovered }) => ({
+              transform: pressed
+                ? 'scale(0.97)'
+                : hovered
+                  ? 'scale(1.02)'
+                  : 'scale(1)',
+              transition: `transform 160ms ${EASE_OUT}`,
+            })}>
+            <Text
+              className="text-[16px] text-button-primary-text"
+              style={{ ...FONT_BODY, fontWeight: '700' }}>
+              Download on the App Store
+            </Text>
+          </Pressable>
+
+          <Text
+            className={cn(
+              'text-center text-subtle-ink',
+              isDesktop ? 'text-[15px]' : 'text-[14px]',
+            )}
+            style={FONT_BODY}>
+            Free for iPhone
+          </Text>
+        </View>
       </View>
     </View>
   );
