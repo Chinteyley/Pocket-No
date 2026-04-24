@@ -13,19 +13,19 @@ type FeaturesSectionProps = {
 
 const FEATURES = [
   {
-    title: 'Instant',
+    title: 'One-tap copy',
     description:
-      'One tap to copy. No scrolling, no decision fatigue. Open the app, get an excuse, done.',
+      'Open Pocket-No, get a fresh line, and copy it into Messages, Mail, Slack, or anywhere you type.',
   },
   {
-    title: 'Curated',
+    title: 'Native shortcuts',
     description:
-      '1,000+ thoughtful lines. Browse by mood, save your favorites, and personalize new ones with Apple Intelligence.',
+      'Quick-copy from the Home Screen, Siri, Control Center, or the iPhone Action Button.',
   },
   {
-    title: 'Everywhere',
+    title: 'Personal to you',
     description:
-      'Native iOS tabs, Siri Shortcuts, home screen quick actions, and light/dark/system appearance.',
+      'Use Apple Intelligence and voice input to craft a no that fits the situation without accounts, ads, or tracking.',
   },
 ] as const;
 
@@ -80,7 +80,7 @@ export function FeaturesSection({ isDesktop }: FeaturesSectionProps) {
             // @ts-expect-error -- web-only CSS property
             transition: `opacity 500ms ${EASE_OUT}, transform 500ms ${EASE_OUT}`,
           }}>
-          Say no without the guilt.
+          Built for quick boundaries.
         </Text>
 
         <View

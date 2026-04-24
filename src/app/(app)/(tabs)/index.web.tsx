@@ -13,7 +13,12 @@ export default function LandingPage() {
 
   return (
     <ScrollView className="flex-1 bg-paper">
-      <Stack.Screen options={{ headerShown: false, title: "Pocket No" }} />
+      <Stack.Screen
+        options={{
+          headerShown: false,
+          title: "Pocket-No | Witty excuses, one tap away",
+        }}
+      />
       <HeroSection isDesktop={isDesktop} />
       <DemoSection isDesktop={isDesktop} />
       <FeaturesSection isDesktop={isDesktop} />

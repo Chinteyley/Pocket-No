@@ -5,7 +5,8 @@ export default function Root({ children }: PropsWithChildren) {
   const siteOrigin =
     process.env.EXPO_PUBLIC_SITE_ORIGIN?.trim().replace(/\/$/, "") ?? "";
   const origin = siteOrigin || "https://pocket-no.ctey.dev";
-  const description = "Witty excuses to say no, one tap away.";
+  const description =
+    "Witty excuses, one tap away. Download Pocket-No for iPhone on the App Store.";
   const ogImageUrl = `${origin}/og-pocket-no.png`;
 
   return (
@@ -18,13 +19,14 @@ export default function Root({ children }: PropsWithChildren) {
           content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
         />
         <meta name="theme-color" content="#332e2a" />
-        <title>Pocket No</title>
-        <meta name="application-name" content="Pocket No" />
-        <meta name="apple-mobile-web-app-title" content="Pocket No" />
+        <title>Pocket-No | Witty excuses, one tap away</title>
+        <meta name="application-name" content="Pocket-No" />
+        <meta name="apple-mobile-web-app-title" content="Pocket-No" />
+        <meta name="apple-itunes-app" content="app-id=6761059120" />
         <meta name="description" content={description} />
 
-        <meta property="og:title" content="Pocket No" />
-        <meta property="og:site_name" content="Pocket No" />
+        <meta property="og:title" content="Pocket-No" />
+        <meta property="og:site_name" content="Pocket-No" />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={origin} />
@@ -34,15 +36,15 @@ export default function Root({ children }: PropsWithChildren) {
         <meta property="og:image:type" content="image/png" />
         <meta
           property="og:image:alt"
-          content="Pocket No social card with the tagline The art of saying no."
+          content="Pocket-No social card for witty excuses, one tap away."
         />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Pocket No" />
+        <meta name="twitter:title" content="Pocket-No" />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={ogImageUrl} />
         <meta
           name="twitter:image:alt"
-          content="Pocket No social card with the tagline The art of saying no."
+          content="Pocket-No social card for witty excuses, one tap away."
         />
 
         <link rel="preconnect" href="https://fonts.googleapis.com" />

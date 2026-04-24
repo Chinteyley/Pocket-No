@@ -28,9 +28,9 @@
     },
     "web": {
       "output": "server",
-      "name": "Pocket No",
-      "shortName": "Pocket No",
-      "description": "Witty excuses to say no, one tap away."
+      "name": "Pocket-No",
+      "shortName": "Pocket-No",
+      "description": "Witty excuses, one tap away."
     },
     "plugins": [
       "expo-router",

@@ -1,6 +1,7 @@
 import { Link } from "expo-router";
 import { Linking, Pressable, Text, View } from "react-native";
 
+import { APP_STORE_URL } from "@/components/landing/app-store";
 import { cn } from "@/lib/cn";
 
 const FONT_DISPLAY = { fontFamily: "Instrument Serif, serif" } as const;
@@ -29,7 +30,7 @@ export function FooterSection({ isDesktop }: FooterSectionProps) {
           )}
           style={{ ...FONT_DISPLAY, letterSpacing: -1 }}
         >
-          Ready to say no?
+          Keep a graceful no in your pocket.
         </Text>
 
         <Text
@@ -39,14 +40,13 @@ export function FooterSection({ isDesktop }: FooterSectionProps) {
           )}
           style={FONT_BODY}
         >
-          Available for iOS. Free and open source.
+          Free on the App Store for iPhone.
         </Text>
 
         <Pressable
-          accessibilityRole="button"
-          onPress={() =>
-            void Linking.openURL("https://github.com/Chinteyley/Pocket-No")
-          }
+          accessibilityLabel="Download Pocket-No on the App Store"
+          accessibilityRole="link"
+          onPress={() => void Linking.openURL(APP_STORE_URL)}
           className="mt-8 items-center justify-center rounded-[16px] bg-button-primary px-8 py-4"
           style={({ pressed, hovered }) => ({
             transform: pressed
@@ -61,12 +61,12 @@ export function FooterSection({ isDesktop }: FooterSectionProps) {
             className="text-[16px] text-button-primary-text"
             style={{ ...FONT_BODY, fontWeight: "600" }}
           >
-            View on GitHub
+            Download on the App Store
           </Text>
         </Pressable>
 
         <View className="mt-16 w-full items-center border-t border-outline pt-6">
-          <View className="flex-row gap-4">
+          <View className="flex-row flex-wrap justify-center gap-4">
             <Link href="/support" asChild>
               <Pressable
                 accessibilityRole="link"
@@ -85,6 +85,25 @@ export function FooterSection({ isDesktop }: FooterSectionProps) {
                 </Text>
               </Pressable>
             </Link>
+            <Pressable
+              accessibilityRole="link"
+              onPress={() =>
+                void Linking.openURL("https://github.com/Chinteyley/Pocket-No")
+              }
+              className="rounded-full px-3 py-2"
+              style={({ pressed, hovered }) => ({
+                opacity: pressed ? 0.7 : 1,
+                transform: hovered ? "translateY(-1px)" : "translateY(0)",
+                transition: `opacity 160ms ${EASE_OUT}, transform 160ms ${EASE_OUT}`,
+              })}
+            >
+              <Text
+                className="text-[14px] text-subtle-ink underline"
+                style={FONT_BODY}
+              >
+                GitHub
+              </Text>
+            </Pressable>
             <Link href="/privacy" asChild>
               <Pressable
                 accessibilityRole="link"
