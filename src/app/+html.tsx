@@ -24,6 +24,8 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-title" content="Pocket-No" />
         <meta name="apple-itunes-app" content="app-id=6761059120" />
         <meta name="description" content={description} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={origin} />
 
         <meta property="og:title" content="Pocket-No" />
         <meta property="og:site_name" content="Pocket-No" />
