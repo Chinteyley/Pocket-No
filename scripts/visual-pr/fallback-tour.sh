@@ -6,6 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 OUT_DIR="${1:?Usage: fallback-tour.sh <output-dir>}"
+TOOLS_ROOT="${TOOLS_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
 mkdir -p "$OUT_DIR"
 
 screenshot() {
@@ -14,9 +15,38 @@ screenshot() {
   log "Captured $name"
 }
 
+dismiss_open_prompt() {
+  # Prefer the Maestro flow: wait until the sheet is visible, then tap Open.
+  if command -v maestro >/dev/null 2>&1 && [ -f "$TOOLS_ROOT/.maestro/dismiss-open.yaml" ]; then
+    maestro test "$TOOLS_ROOT/.maestro/dismiss-open.yaml" >/dev/null 2>&1 || true
+  fi
+
+  local _i
+  for _i in 1 2 3; do
+    osascript >/dev/null 2>&1 <<'APPLESCRIPT' || true
+tell application "Simulator" to activate
+delay 0.2
+tell application "System Events"
+  if exists process "Simulator" then
+    tell process "Simulator"
+      if exists (button "Open" of window 1) then
+        click button "Open" of window 1
+      else if exists (button "Open" of sheet 1 of window 1) then
+        click button "Open" of sheet 1 of window 1
+      end if
+    end tell
+  end if
+end tell
+APPLESCRIPT
+    wait_for_app_idle 1
+  done
+}
+
+# Last resort only. Caller must have already failed in-app navigation.
 open_route() {
   local url="$1"
   xcrun simctl openurl booted "$url" >/dev/null
+  dismiss_open_prompt
   wait_for_app_idle 3
 }
 
@@ -26,8 +56,6 @@ screenshot "home"
 xcrun simctl launch booted "$BUNDLE_ID" >/dev/null 2>&1 || true
 wait_for_app_idle 2
 screenshot "home-copied"
-
-open_route "pocketno:///"
 screenshot "home-new"
 
 open_route "pocketno:///browse"

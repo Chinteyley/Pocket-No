@@ -1,9 +1,14 @@
 appId: dev.ctey.pocketno
 name: Visual review — main paths
 ---
+# capture.sh already launched by bundle id. Do not clear/relaunch — Maestro
+# launchApp + clearState opens the custom scheme and raises the system sheet.
 - launchApp:
     appId: dev.ctey.pocketno
-    clearState: true
+    stopApp: false
+    clearState: false
+- runFlow:
+    file: dismiss-open.yaml
 - extendedWaitUntil:
     visible: "Copy"
     timeout: 45000
@@ -24,41 +29,162 @@ name: Visual review — main paths
     timeout: 8000
     optional: true
 - takeScreenshot: home-new
-- openLink: pocketno:///browse
+
+# Tabs: label, then tab-bar point. Scheme openLink only if the screen
+# still is not showing — never once the marker is visible.
+- tapOn:
+    text: "Browse"
+    optional: true
 - extendedWaitUntil:
     visible: "All"
-    timeout: 15000
+    timeout: 6000
+    optional: true
+- runFlow:
+    when:
+      notVisible: "All"
+    commands:
+      - tapOn:
+          point: "37%,91%"
+      - extendedWaitUntil:
+          visible: "All"
+          timeout: 8000
+          optional: true
+- runFlow:
+    when:
+      notVisible: "All"
+    commands:
+      - openLink: pocketno:///browse
+      - runFlow:
+          file: dismiss-open.yaml
+      - extendedWaitUntil:
+          visible: "All"
+          timeout: 15000
 - takeScreenshot: browse
 - tapOn:
     text: "Work"
     optional: true
 - takeScreenshot: browse-work
-- openLink: pocketno:///favorites
+
+- tapOn:
+    text: "Favorites"
+    optional: true
 - extendedWaitUntil:
     visible: "No favorites yet"
-    timeout: 15000
+    timeout: 6000
     optional: true
+- runFlow:
+    when:
+      notVisible: "No favorites yet"
+    commands:
+      - tapOn:
+          point: "62%,91%"
+      - extendedWaitUntil:
+          visible: "No favorites yet"
+          timeout: 8000
+          optional: true
+- runFlow:
+    when:
+      notVisible: "No favorites yet"
+    commands:
+      - openLink: pocketno:///favorites
+      - runFlow:
+          file: dismiss-open.yaml
+      - extendedWaitUntil:
+          visible: "No favorites yet"
+          timeout: 15000
+          optional: true
 - takeScreenshot: favorites
-- openLink: pocketno:///settings
+
+- tapOn:
+    text: "Settings"
+    optional: true
 - extendedWaitUntil:
     visible: "Appearance"
-    timeout: 15000
+    timeout: 6000
+    optional: true
+- runFlow:
+    when:
+      notVisible: "Appearance"
+    commands:
+      - tapOn:
+          point: "87%,91%"
+      - extendedWaitUntil:
+          visible: "Appearance"
+          timeout: 8000
+          optional: true
+- runFlow:
+    when:
+      notVisible: "Appearance"
+    commands:
+      - openLink: pocketno:///settings
+      - runFlow:
+          file: dismiss-open.yaml
+      - extendedWaitUntil:
+          visible: "Appearance"
+          timeout: 15000
 - takeScreenshot: settings
-- openLink: pocketno:///support
+
+- tapOn:
+    text: "Support"
+    optional: true
 - extendedWaitUntil:
-    visible: "Support"
-    timeout: 15000
+    visible: "support@ctey.dev"
+    timeout: 8000
+    optional: true
+- runFlow:
+    when:
+      notVisible: "support@ctey.dev"
+    commands:
+      - openLink: pocketno:///support
+      - runFlow:
+          file: dismiss-open.yaml
+      - extendedWaitUntil:
+          visible: "support@ctey.dev"
+          timeout: 15000
 - takeScreenshot: support
-- openLink: pocketno:///privacy
+- tapOn:
+    text: "Settings"
+    optional: true
+- tapOn:
+    point: "8%,11%"
+    optional: true
 - extendedWaitUntil:
-    visible: "Privacy Policy"
-    timeout: 15000
+    visible: "Appearance"
+    timeout: 8000
+    optional: true
+- tapOn:
+    text: "Privacy Policy"
+    optional: true
+- extendedWaitUntil:
+    visible: "This Privacy Policy"
+    timeout: 8000
+    optional: true
+- runFlow:
+    when:
+      notVisible: "This Privacy Policy"
+    commands:
+      - openLink: pocketno:///privacy
+      - runFlow:
+          file: dismiss-open.yaml
+      - extendedWaitUntil:
+          visible: "This Privacy Policy"
+          timeout: 15000
 - takeScreenshot: privacy
+
+# No in-app control on the simulator (personalize pull-tab is hidden).
 - openLink: pocketno:///personalize
+- runFlow:
+    file: dismiss-open.yaml
 - extendedWaitUntil:
     visible: "Not available on this device."
     timeout: 15000
     optional: true
 - takeScreenshot: personalize-fallback
 - openLink: "pocketno:///copy?entry=app"
+- runFlow:
+    file: dismiss-open.yaml
+- extendedWaitUntil:
+    visible: "Copy another?"
+    timeout: 8000
+    optional: true
 - takeScreenshot: copy-sheet

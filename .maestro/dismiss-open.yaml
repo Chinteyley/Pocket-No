@@ -1,0 +1,20 @@
+appId: dev.ctey.pocketno
+---
+# Wait for the iOS 26 "Open in Pocket-No?" sheet, then tap Open.
+# No-op when the sheet never appears (do not tap Open blindly).
+- extendedWaitUntil:
+    visible: "Open in"
+    timeout: 2500
+    optional: true
+- runFlow:
+    when:
+      visible: "Open in"
+    commands:
+      - tapOn:
+          text: "Open"
+      - waitForAnimationToEnd:
+          timeout: 4000
+      - extendedWaitUntil:
+          notVisible: "Open in"
+          timeout: 4000
+          optional: true

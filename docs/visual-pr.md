@@ -110,6 +110,6 @@ If the media push is denied, the job still uploads Actions artifacts. The commen
 - Settings
 - Support and Privacy
 - Personalize fallback (`Not available on this device.`)
-- Copy sheet via `pocketno:///copy?entry=app`
+- Copy sheet (last-resort `pocketno:///copy?entry=app` only)
 
-Deep links are preferred over tapping `NativeTabs`, which Maestro often cannot see as ordinary buttons.
+The flow taps tab labels, then the tab-bar coordinates, then Settings rows. Custom-scheme `openLink` is last resort and only when the destination marker is still missing. If iOS shows **Open in “Pocket-No”?**, the flow waits until that sheet is visible and taps **Open** once — it never taps Open blindly and never `openLink`s again after the target screen is showing. `capture.sh` launches by bundle id; Maestro does not `clearState` / relaunch (that reopen uses the scheme and raises the sheet).
