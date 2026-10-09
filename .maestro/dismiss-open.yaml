@@ -1,11 +1,15 @@
 appId: dev.ctey.pocketno
 ---
-# The iOS 26 "Open in Pocket-No?" sheet is a system alert. Maestro cannot
-# reliably match its text, so tap the blue Open button by position after a
-# short wait. 67%,48% is empty Home chrome when the sheet is absent.
+# Measured on iPhone 17 screenshots (1206x2622): the blue Open button
+# of the system sheet is centered at 68.4%, 54.2% (bbox y 51.5–56.9%).
+# 67%,48% missed above the button. Spaces in % points are required.
 - waitForAnimationToEnd:
-    timeout: 1500
+    timeout: 2000
 - tapOn:
-    point: "67%,48%"
+    point: "68%, 54%"
 - waitForAnimationToEnd:
-    timeout: 3000
+    timeout: 2000
+- tapOn:
+    point: "70%, 55%"
+- waitForAnimationToEnd:
+    timeout: 2500

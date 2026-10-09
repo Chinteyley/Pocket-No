@@ -24,7 +24,8 @@ name: Visual review — main paths
     optional: true
 - takeScreenshot: home-new
 
-# Tab bar sits at ~96% on iPhone 17. 91% hits the Copy/New capsule.
+# Tab icons sit at y 92–96% (center ~94%) on iPhone 17 1206x2622.
+# 91% hits Copy/New. Point strings need a space after the comma.
 - tapOn:
     id: "Browse"
     optional: true
@@ -40,7 +41,7 @@ name: Visual review — main paths
       notVisible: "All"
     commands:
       - tapOn:
-          point: "37%,96%"
+          point: "37%, 94%"
       - extendedWaitUntil:
           visible: "All"
           timeout: 8000
@@ -76,7 +77,7 @@ name: Visual review — main paths
       notVisible: "No favorites yet"
     commands:
       - tapOn:
-          point: "63%,96%"
+          point: "63%, 94%"
       - extendedWaitUntil:
           visible: "No favorites yet"
           timeout: 8000
@@ -109,7 +110,7 @@ name: Visual review — main paths
       notVisible: "Appearance"
     commands:
       - tapOn:
-          point: "87%,96%"
+          point: "87%, 94%"
       - extendedWaitUntil:
           visible: "Appearance"
           timeout: 8000
@@ -148,7 +149,7 @@ name: Visual review — main paths
     text: "Settings"
     optional: true
 - tapOn:
-    point: "8%,11%"
+    point: "8%, 11%"
     optional: true
 - extendedWaitUntil:
     visible: "Appearance"
