@@ -112,4 +112,4 @@ If the media push is denied, the job still uploads Actions artifacts. The commen
 - Personalize fallback (`Not available on this device.`)
 - Copy sheet (last-resort `pocketno:///copy?entry=app` only)
 
-The flow taps tab labels / ids, then the tab-bar at **~96%** height (91% hits the Copy/New capsule). Custom-scheme `openLink` is last resort and only when the destination marker is still missing. The iOS 26 Open-in-app sheet is a system alert, so after a last-resort `openLink` the flow taps the blue **Open** button by coordinates (67%, 48%) — it never `openLink`s again after the target screen is showing. `capture.sh` launches by bundle id; Maestro does not relaunch.
+The flow taps tab labels / ids, then the tab-bar at **94%** height on iPhone 17 (icons live at 92–96%; 91% hits Copy/New). Custom-scheme `openLink` is last resort and only when the destination marker is still missing. After that, tap the system **Open** button at **68%, 54%** (measured from the 1206×2622 screenshots). `capture.sh` launches by bundle id; Maestro does not relaunch.
