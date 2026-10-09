@@ -43,7 +43,7 @@ Do not set `EXPO_PUBLIC_VISUAL_REVIEW` in EAS production env vars.
 
 ## Cost
 
-The job uses a GitHub-hosted **macOS** runner and does **two** native simulator builds.
+The job uses a GitHub-hosted **macOS 26** runner (Xcode 26+) and does **two** native simulator builds.
 
 | Plan | What you pay |
 | --- | --- |
