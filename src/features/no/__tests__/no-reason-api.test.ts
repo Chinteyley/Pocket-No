@@ -6,13 +6,13 @@ import {
   NO_REASON_API_TIMEOUT_MS,
 } from '../no-reason-api';
 
-const originalFetch = global.fetch;
+const originalFetch = globalThis.fetch;
 const originalSiteOrigin = process.env.EXPO_PUBLIC_SITE_ORIGIN;
 const originalVisualReview = process.env.EXPO_PUBLIC_VISUAL_REVIEW;
 
 describe('fetchFreshNoReason', () => {
   afterEach(() => {
-    global.fetch = originalFetch;
+    globalThis.fetch = originalFetch;
     process.env.EXPO_PUBLIC_SITE_ORIGIN = originalSiteOrigin;
     if (originalVisualReview === undefined) {
       delete process.env.EXPO_PUBLIC_VISUAL_REVIEW;
@@ -35,7 +35,7 @@ describe('fetchFreshNoReason', () => {
       source: 'json-catalog' as const,
     };
 
-    global.fetch = jest.fn().mockResolvedValue(
+    globalThis.fetch = jest.fn().mockResolvedValue(
       new Response(JSON.stringify(reason), {
         status: 200,
         headers: {
@@ -58,7 +58,7 @@ describe('fetchFreshNoReason', () => {
       source: 'remote-catalog' as const,
     };
 
-    global.fetch = jest.fn().mockResolvedValue(
+    globalThis.fetch = jest.fn().mockResolvedValue(
       new Response(JSON.stringify(reason), {
         status: 200,
         headers: {
@@ -76,7 +76,7 @@ describe('fetchFreshNoReason', () => {
   it('uses the site origin as the API base', async () => {
     process.env.EXPO_PUBLIC_SITE_ORIGIN = 'https://pocketno.example.com/';
 
-    global.fetch = jest.fn().mockResolvedValue(
+    globalThis.fetch = jest.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
           id: 'api-1',
@@ -95,7 +95,7 @@ describe('fetchFreshNoReason', () => {
 
     await fetchFreshNoReason();
 
-    expect(global.fetch).toHaveBeenCalledWith(
+    expect(globalThis.fetch).toHaveBeenCalledWith(
       'https://pocketno.example.com/api/no',
       expect.objectContaining({
         headers: {
@@ -106,7 +106,7 @@ describe('fetchFreshNoReason', () => {
   });
 
   it('falls back when the API responds with a non-ok status', async () => {
-    global.fetch = jest.fn().mockResolvedValue(
+    globalThis.fetch = jest.fn().mockResolvedValue(
       new Response(null, {
         status: 503,
       })
@@ -121,7 +121,7 @@ describe('fetchFreshNoReason', () => {
   });
 
   it('falls back when the API payload is invalid', async () => {
-    global.fetch = jest.fn().mockResolvedValue(
+    globalThis.fetch = jest.fn().mockResolvedValue(
       new Response(JSON.stringify({ nope: true }), {
         status: 200,
         headers: {
@@ -140,13 +140,13 @@ describe('fetchFreshNoReason', () => {
 
   it('returns the pinned catalog line when visual review is enabled', async () => {
     process.env.EXPO_PUBLIC_VISUAL_REVIEW = '1';
-    global.fetch = jest.fn();
+    globalThis.fetch = jest.fn();
 
     await expect(fetchFreshNoReason()).resolves.toEqual({
       reason: DEFAULT_NO_REASON,
       delivery: 'fallback',
     });
-    expect(global.fetch).not.toHaveBeenCalled();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
     expect(isVisualReviewBuild()).toBe(true);
   });
 
@@ -158,13 +158,13 @@ describe('fetchFreshNoReason', () => {
   it('falls back when the API request times out', async () => {
     jest.useFakeTimers();
 
-    global.fetch = jest.fn((_input, init?: RequestInit) => {
+    globalThis.fetch = jest.fn((_input, init?: RequestInit) => {
       return new Promise((_resolve, reject) => {
         init?.signal?.addEventListener('abort', () => {
           reject(init.signal?.reason);
         });
       });
-    });
+    }) as typeof fetch;
 
     const resultPromise = fetchFreshNoReason();
 

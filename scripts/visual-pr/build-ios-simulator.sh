@@ -18,6 +18,14 @@ export EXPO_NO_TELEMETRY=1
 export EXPO_PUBLIC_VISUAL_REVIEW="${EXPO_PUBLIC_VISUAL_REVIEW:-1}"
 export EXPO_PUBLIC_SITE_ORIGIN="${EXPO_PUBLIC_SITE_ORIGIN:-http://127.0.0.1:${VISUAL_REVIEW_PORT}}"
 
+# Expo 57's Release embed only reliably inlines EXPO_PUBLIC_* from a .env file
+# plus static `process.env.EXPO_PUBLIC_*` reads. xcodebuild's bundle script does
+# not always inherit the parent shell env.
+cat > "$APP_ROOT/.env" <<EOF
+EXPO_PUBLIC_VISUAL_REVIEW=${EXPO_PUBLIC_VISUAL_REVIEW}
+EXPO_PUBLIC_SITE_ORIGIN=${EXPO_PUBLIC_SITE_ORIGIN}
+EOF
+
 log "Installing JS dependencies in $APP_ROOT"
 if [ -f bun.lock ]; then
   bun install --frozen-lockfile

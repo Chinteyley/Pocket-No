@@ -6,5 +6,12 @@ module.exports = defineConfig([
   expoConfig,
   {
     ignores: ["dist/*"],
+  },
+  {
+    rules: {
+      // Reanimated SharedValue `.value` writes are the supported mutation API.
+      // The React Compiler immutability rule treats them as React state.
+      'react-hooks/immutability': 'off',
+    },
   }
 ]);

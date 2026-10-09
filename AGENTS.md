@@ -11,7 +11,7 @@ This file provides guidance to agents working with code in this repository.
 
 ## Key Architecture
 
-- **Expo 55 / React Native 0.83.2 / React 19** with Expo Router (file-system routing, typed routes)
+- **Expo 57 / React Native 0.86.3 / React 19.2** with Expo Router (file-system routing, typed routes)
 - **Uniwind** for styling (not NativeWind) — `className` on RN components processed via `withUniwindConfig` in metro. CSS variables defined in `src/global.css`, read with `useCSSVariable()` from `uniwind`
 - **React Compiler is enabled** (`reactCompiler: true` in app.json) — do not add manual `useMemo`/`useCallback` unless profiling shows need
 - **`@bacons/apple-targets`** for iOS App Intent shortcut target in `targets/pocket-no-shortcuts/` (requires iOS 18+)

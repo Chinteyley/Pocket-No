@@ -4,26 +4,28 @@ import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
-} from '@react-navigation/native';
+} from "expo-router/react-navigation";
 import { Image } from 'expo-image';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
-import { Platform, useColorScheme } from 'react-native';
+import { Platform, useColorScheme, type ColorValue } from 'react-native';
 import { useCSSVariable } from 'uniwind';
 import { useThemePreference } from '@/features/theme/theme-preference-store';
 
-function TabIcon({ name, color, size }: { name: SFSymbol; color: string; size: number }) {
+function TabIcon({ name, color, size }: { name: SFSymbol; color: ColorValue; size: number }) {
+  const tintColor = typeof color === 'string' ? color : undefined;
+
   if (Platform.OS === 'ios') {
     return (
       <Image
         contentFit="contain"
         source={`sf:${name}`}
         style={{ width: size, height: size }}
-        tintColor={color}
+        tintColor={tintColor}
       />
     );
   }
 
-  return <SymbolView name={name} size={size} tintColor={color} weight="semibold" />;
+  return <SymbolView name={name} size={size} tintColor={tintColor} weight="semibold" />;
 }
 
 export default function TabsLayout() {

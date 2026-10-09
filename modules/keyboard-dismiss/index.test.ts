@@ -1,8 +1,22 @@
+import { requireOptionalNativeModule } from 'expo-modules-core';
+
+import { resetKeyboardOffset, setKeyboardOffsetY } from './index';
+
+jest.mock('expo-modules-core', () => {
+  const actual = jest.requireActual('expo-modules-core') as Record<string, unknown>;
+
+  return {
+    ...actual,
+    requireOptionalNativeModule: jest.fn(() => null),
+  };
+});
+
+const requireOptionalNativeModuleMock = jest.mocked(requireOptionalNativeModule);
+
 describe('keyboard-dismiss module wrapper', () => {
   const originalExpoOs = process.env.EXPO_OS;
 
   afterEach(() => {
-    jest.resetModules();
     jest.clearAllMocks();
 
     if (originalExpoOs === undefined) {
@@ -17,18 +31,13 @@ describe('keyboard-dismiss module wrapper', () => {
 
     const setOffsetY = jest.fn();
     const resetOffset = jest.fn();
+    requireOptionalNativeModuleMock.mockReturnValue({
+      setOffsetY,
+      resetOffset,
+    });
 
-    jest.doMock('expo-modules-core', () => ({
-      requireOptionalNativeModule: jest.fn(() => ({
-        setOffsetY,
-        resetOffset,
-      })),
-    }));
-
-    const keyboardDismiss = require('./index') as typeof import('./index');
-
-    keyboardDismiss.setKeyboardOffsetY(48);
-    keyboardDismiss.resetKeyboardOffset();
+    setKeyboardOffsetY(48);
+    resetKeyboardOffset();
 
     expect(setOffsetY).toHaveBeenCalledWith(48);
     expect(resetOffset).toHaveBeenCalledTimes(1);
@@ -36,27 +45,17 @@ describe('keyboard-dismiss module wrapper', () => {
 
   it('is a no-op when the native module is missing on iOS', () => {
     process.env.EXPO_OS = 'ios';
+    requireOptionalNativeModuleMock.mockReturnValue(null);
 
-    jest.doMock('expo-modules-core', () => ({
-      requireOptionalNativeModule: jest.fn(() => null),
-    }));
-
-    const keyboardDismiss = require('./index') as typeof import('./index');
-
-    expect(() => keyboardDismiss.setKeyboardOffsetY(24)).not.toThrow();
-    expect(() => keyboardDismiss.resetKeyboardOffset()).not.toThrow();
+    expect(() => setKeyboardOffsetY(24)).not.toThrow();
+    expect(() => resetKeyboardOffset()).not.toThrow();
   });
 
   it('is a no-op outside iOS when the native module is unavailable', () => {
     process.env.EXPO_OS = 'android';
+    requireOptionalNativeModuleMock.mockReturnValue(null);
 
-    jest.doMock('expo-modules-core', () => ({
-      requireOptionalNativeModule: jest.fn(() => null),
-    }));
-
-    const keyboardDismiss = require('./index') as typeof import('./index');
-
-    expect(() => keyboardDismiss.setKeyboardOffsetY(12)).not.toThrow();
-    expect(() => keyboardDismiss.resetKeyboardOffset()).not.toThrow();
+    expect(() => setKeyboardOffsetY(12)).not.toThrow();
+    expect(() => resetKeyboardOffset()).not.toThrow();
   });
 });
