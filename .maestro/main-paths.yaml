@@ -1,14 +1,8 @@
 appId: dev.ctey.pocketno
 name: Visual review — main paths
 ---
-# capture.sh already launched by bundle id. Do not clear/relaunch — Maestro
-# launchApp + clearState opens the custom scheme and raises the system sheet.
-- launchApp:
-    appId: dev.ctey.pocketno
-    stopApp: false
-    clearState: false
-- runFlow:
-    file: dismiss-open.yaml
+# capture.sh already launched by bundle id. Do not relaunch — Maestro
+# launchApp opens the custom scheme and raises the system sheet.
 - extendedWaitUntil:
     visible: "Copy"
     timeout: 45000
@@ -30,21 +24,23 @@ name: Visual review — main paths
     optional: true
 - takeScreenshot: home-new
 
-# Tabs: label, then tab-bar point. Scheme openLink only if the screen
-# still is not showing — never once the marker is visible.
+# Tab bar sits at ~96% on iPhone 17. 91% hits the Copy/New capsule.
+- tapOn:
+    id: "Browse"
+    optional: true
 - tapOn:
     text: "Browse"
     optional: true
 - extendedWaitUntil:
     visible: "All"
-    timeout: 6000
+    timeout: 5000
     optional: true
 - runFlow:
     when:
       notVisible: "All"
     commands:
       - tapOn:
-          point: "37%,91%"
+          point: "37%,96%"
       - extendedWaitUntil:
           visible: "All"
           timeout: 8000
@@ -66,18 +62,21 @@ name: Visual review — main paths
 - takeScreenshot: browse-work
 
 - tapOn:
+    id: "Favorites"
+    optional: true
+- tapOn:
     text: "Favorites"
     optional: true
 - extendedWaitUntil:
     visible: "No favorites yet"
-    timeout: 6000
+    timeout: 5000
     optional: true
 - runFlow:
     when:
       notVisible: "No favorites yet"
     commands:
       - tapOn:
-          point: "62%,91%"
+          point: "63%,96%"
       - extendedWaitUntil:
           visible: "No favorites yet"
           timeout: 8000
@@ -96,18 +95,21 @@ name: Visual review — main paths
 - takeScreenshot: favorites
 
 - tapOn:
+    id: "Settings"
+    optional: true
+- tapOn:
     text: "Settings"
     optional: true
 - extendedWaitUntil:
     visible: "Appearance"
-    timeout: 6000
+    timeout: 5000
     optional: true
 - runFlow:
     when:
       notVisible: "Appearance"
     commands:
       - tapOn:
-          point: "87%,91%"
+          point: "87%,96%"
       - extendedWaitUntil:
           visible: "Appearance"
           timeout: 8000
@@ -171,7 +173,6 @@ name: Visual review — main paths
           timeout: 15000
 - takeScreenshot: privacy
 
-# No in-app control on the simulator (personalize pull-tab is hidden).
 - openLink: pocketno:///personalize
 - runFlow:
     file: dismiss-open.yaml
