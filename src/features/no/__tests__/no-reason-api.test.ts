@@ -140,13 +140,13 @@ describe('fetchFreshNoReason', () => {
 
   it('returns the pinned catalog line when visual review is enabled', async () => {
     process.env.EXPO_PUBLIC_VISUAL_REVIEW = '1';
-    global.fetch = jest.fn();
+    globalThis.fetch = jest.fn();
 
     await expect(fetchFreshNoReason()).resolves.toEqual({
       reason: DEFAULT_NO_REASON,
       delivery: 'fallback',
     });
-    expect(global.fetch).not.toHaveBeenCalled();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
     expect(isVisualReviewBuild()).toBe(true);
   });
 
