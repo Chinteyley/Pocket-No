@@ -43,7 +43,10 @@ function getApiBase() {
 }
 
 export function isVisualReviewBuild() {
-  return process.env[VISUAL_REVIEW_ENV_FLAG] === '1';
+  // Expo only inlines `process.env.EXPO_PUBLIC_*` via static dot access in
+  // Release / Hermes bundles. Bracket access is left as a runtime lookup
+  // and is always undefined after xcodebuild embed.
+  return process.env.EXPO_PUBLIC_VISUAL_REVIEW === '1';
 }
 
 function buildRequestTimeoutError() {
