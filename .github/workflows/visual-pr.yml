@@ -1,0 +1,203 @@
+name: Visual PR review
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Base commit to capture (defaults to origin/main)
+        required: false
+      head_sha:
+        description: Head commit to capture (defaults to the current SHA)
+        required: false
+      pr_number:
+        description: PR number to update with a sticky comment
+        required: false
+
+concurrency:
+  group: visual-pr-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  ios-visual-review:
+    name: iOS simulator before / after
+    runs-on: macos-15
+    timeout-minutes: 90
+    env:
+      EXPO_NO_TELEMETRY: "1"
+      EXPO_PUBLIC_VISUAL_REVIEW: "1"
+      EXPO_PUBLIC_SITE_ORIGIN: "http://127.0.0.1:8787"
+      VISUAL_REVIEW_PORT: "8787"
+      DERIVED_DATA_DIR: ${{ github.workspace }}/.cache/pocket-no-deriveddata
+      BUNDLE_ID: dev.ctey.pocketno
+      SIMULATOR_NAME: iPhone 16
+
+    steps:
+      - name: Checkout workflow tools
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mark start time
+        id: timing
+        run: echo "start=$(date +%s)" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve commits
+        id: meta
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          INPUT_BASE_SHA: ${{ inputs.base_sha }}
+          INPUT_HEAD_SHA: ${{ inputs.head_sha }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE_SHA="$PR_BASE_SHA"
+            HEAD_SHA="$PR_HEAD_SHA"
+            NUMBER="$PR_NUMBER"
+          else
+            HEAD_SHA="${INPUT_HEAD_SHA:-${{ github.sha }}}"
+            if [ -n "${INPUT_BASE_SHA:-}" ]; then
+              BASE_SHA="$INPUT_BASE_SHA"
+            else
+              git fetch --depth=1 origin "$DEFAULT_BRANCH"
+              BASE_SHA="$(git rev-parse "origin/${DEFAULT_BRANCH}")"
+            fi
+            NUMBER="${INPUT_PR_NUMBER:-}"
+          fi
+          echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$NUMBER" >> "$GITHUB_OUTPUT"
+          echo "Started visual review for base $BASE_SHA vs head $HEAD_SHA"
+
+      - name: Show runner Xcode
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available || true
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Cache Bun
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
+          key: cocoapods-${{ runner.os }}-v1
+          restore-keys: cocoapods-${{ runner.os }}-
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.DERIVED_DATA_DIR }}
+          key: deriveddata-${{ runner.os }}-${{ hashFiles('bun.lock') }}-v1
+          restore-keys: deriveddata-${{ runner.os }}-
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Install ffmpeg
+        continue-on-error: true
+        run: brew install ffmpeg
+
+      - name: Prepare worktrees
+        env:
+          BASE_SHA: ${{ steps.meta.outputs.base_sha }}
+          HEAD_SHA: ${{ steps.meta.outputs.head_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 origin "$BASE_SHA" "$HEAD_SHA"
+          git worktree add "$RUNNER_TEMP/pocket-no-base" "$BASE_SHA"
+          git worktree add "$RUNNER_TEMP/pocket-no-head" "$HEAD_SHA"
+
+      - name: Start fixture server
+        run: |
+          bun scripts/visual-pr/fixture-server.mjs &
+          echo $! > "$RUNNER_TEMP/fixture.pid"
+          for _ in 1 2 3 4 5; do
+            if curl -sf "http://127.0.0.1:${VISUAL_REVIEW_PORT}/health" >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Fixture server did not become healthy" >&2
+          exit 1
+
+      - name: Capture base
+        env:
+          TOOLS_ROOT: ${{ github.workspace }}
+        run: |
+          bash scripts/visual-pr/run-side.sh base \
+            "$RUNNER_TEMP/pocket-no-base" \
+            "${{ github.workspace }}/artifacts/visual-pr/base"
+
+      - name: Capture head
+        if: always()
+        env:
+          TOOLS_ROOT: ${{ github.workspace }}
+        run: |
+          bash scripts/visual-pr/run-side.sh head \
+            "$RUNNER_TEMP/pocket-no-head" \
+            "${{ github.workspace }}/artifacts/visual-pr/head"
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-visual-review
+          if-no-files-found: warn
+          path: |
+            artifacts/visual-pr/**
+            **/xcodebuild-visual-pr.log
+
+      - name: Publish sticky PR comment
+        if: always() && steps.meta.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
+          BASE_SHA: ${{ steps.meta.outputs.base_sha }}
+          HEAD_SHA: ${{ steps.meta.outputs.head_sha }}
+          ARTIFACT_NAME: ios-visual-review
+          VISUAL_PR_OUT: ${{ github.workspace }}/artifacts/visual-pr
+          PR_MEDIA_BRANCH: pr-media
+        run: |
+          NOW="$(date +%s)"
+          START="${{ steps.timing.outputs.start }}"
+          ELAPSED="$((NOW - START))"
+          MINUTES="$((ELAPSED / 60))"
+          SECONDS="$((ELAPSED % 60))"
+          export DURATION_LABEL="${MINUTES}m ${SECONDS}s"
+          bun scripts/visual-pr/publish-comment.mjs

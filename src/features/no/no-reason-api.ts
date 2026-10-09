@@ -1,8 +1,9 @@
-import { getRandomNoReason } from './catalog';
+import { DEFAULT_NO_REASON, getRandomNoReason } from './catalog';
 import { isNoReasonSource, type NoReason } from './contracts';
 
 export type NoReasonDelivery = 'api' | 'fallback';
 export const NO_REASON_API_TIMEOUT_MS = 4000;
+export const VISUAL_REVIEW_ENV_FLAG = 'EXPO_PUBLIC_VISUAL_REVIEW';
 
 export type FetchFreshNoReasonResult = {
   reason: NoReason;
@@ -39,6 +40,10 @@ function normalizeApiBase(value: string | undefined) {
 
 function getApiBase() {
   return normalizeApiBase(process.env.EXPO_PUBLIC_SITE_ORIGIN) || '';
+}
+
+export function isVisualReviewBuild() {
+  return process.env[VISUAL_REVIEW_ENV_FLAG] === '1';
 }
 
 function buildRequestTimeoutError() {
@@ -82,6 +87,13 @@ function buildFallbackResult(errorMessage: string): FetchFreshNoReasonResult {
 }
 
 export async function fetchFreshNoReason(): Promise<FetchFreshNoReasonResult> {
+  if (isVisualReviewBuild()) {
+    return {
+      reason: DEFAULT_NO_REASON,
+      delivery: 'fallback',
+    };
+  }
+
   const apiBase = getApiBase();
 
   try {

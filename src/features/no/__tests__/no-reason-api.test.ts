@@ -1,13 +1,24 @@
+import { DEFAULT_NO_REASON } from '../catalog';
 import { NO_REASON_SOURCE } from '../contracts';
-import { fetchFreshNoReason, NO_REASON_API_TIMEOUT_MS } from '../no-reason-api';
+import {
+  fetchFreshNoReason,
+  isVisualReviewBuild,
+  NO_REASON_API_TIMEOUT_MS,
+} from '../no-reason-api';
 
 const originalFetch = global.fetch;
 const originalSiteOrigin = process.env.EXPO_PUBLIC_SITE_ORIGIN;
+const originalVisualReview = process.env.EXPO_PUBLIC_VISUAL_REVIEW;
 
 describe('fetchFreshNoReason', () => {
   afterEach(() => {
     global.fetch = originalFetch;
     process.env.EXPO_PUBLIC_SITE_ORIGIN = originalSiteOrigin;
+    if (originalVisualReview === undefined) {
+      delete process.env.EXPO_PUBLIC_VISUAL_REVIEW;
+    } else {
+      process.env.EXPO_PUBLIC_VISUAL_REVIEW = originalVisualReview;
+    }
     jest.useRealTimers();
     jest.restoreAllMocks();
   });
@@ -125,6 +136,23 @@ describe('fetchFreshNoReason', () => {
     expect(result.reason.source).toBe(NO_REASON_SOURCE);
     expect(result.reason.text.length).toBeGreaterThan(0);
     expect(result.errorMessage).toBe('No API returned an invalid payload');
+  });
+
+  it('returns the pinned catalog line when visual review is enabled', async () => {
+    process.env.EXPO_PUBLIC_VISUAL_REVIEW = '1';
+    global.fetch = jest.fn();
+
+    await expect(fetchFreshNoReason()).resolves.toEqual({
+      reason: DEFAULT_NO_REASON,
+      delivery: 'fallback',
+    });
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(isVisualReviewBuild()).toBe(true);
+  });
+
+  it('keeps visual review off by default', () => {
+    delete process.env.EXPO_PUBLIC_VISUAL_REVIEW;
+    expect(isVisualReviewBuild()).toBe(false);
   });
 
   it('falls back when the API request times out', async () => {

@@ -1,0 +1,64 @@
+appId: dev.ctey.pocketno
+name: Visual review — main paths
+---
+- launchApp:
+    appId: dev.ctey.pocketno
+    clearState: true
+- extendedWaitUntil:
+    visible: "Copy"
+    timeout: 45000
+- assertNotVisible: "Open personalized no composer"
+- takeScreenshot: home
+- tapOn:
+    text: "Copy"
+    optional: true
+- takeScreenshot: home-copied
+- tapOn:
+    text: "New"
+    optional: true
+- tapOn:
+    text: "Another"
+    optional: true
+- extendedWaitUntil:
+    visible: "Copy"
+    timeout: 8000
+    optional: true
+- takeScreenshot: home-new
+- openLink: pocketno:///browse
+- extendedWaitUntil:
+    visible: "All"
+    timeout: 15000
+- takeScreenshot: browse
+- tapOn:
+    text: "Work"
+    optional: true
+- takeScreenshot: browse-work
+- openLink: pocketno:///favorites
+- extendedWaitUntil:
+    visible: "No favorites yet"
+    timeout: 15000
+    optional: true
+- takeScreenshot: favorites
+- openLink: pocketno:///settings
+- extendedWaitUntil:
+    visible: "Appearance"
+    timeout: 15000
+- takeScreenshot: settings
+- openLink: pocketno:///support
+- extendedWaitUntil:
+    visible: "Support"
+    timeout: 15000
+- takeScreenshot: support
+- openLink: pocketno:///privacy
+- extendedWaitUntil:
+    visible: "Privacy Policy"
+    timeout: 15000
+- takeScreenshot: privacy
+- openLink: pocketno:///personalize
+- extendedWaitUntil:
+    visible: "Not available on this device."
+    timeout: 15000
+    optional: true
+- takeScreenshot: personalize-fallback
+- openLink: "pocketno:///copy?entry=app"
+- takeScreenshot: copy-sheet
