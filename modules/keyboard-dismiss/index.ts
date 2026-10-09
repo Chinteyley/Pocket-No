@@ -5,12 +5,14 @@ type KeyboardDismissModule = {
   resetOffset(): void;
 };
 
-const KeyboardDismiss = requireOptionalNativeModule<KeyboardDismissModule>('KeyboardDismiss');
+function getKeyboardDismiss() {
+  return requireOptionalNativeModule<KeyboardDismissModule>('KeyboardDismiss');
+}
 
 export function setKeyboardOffsetY(offsetY: number): void {
-  KeyboardDismiss?.setOffsetY(offsetY);
+  getKeyboardDismiss()?.setOffsetY(offsetY);
 }
 
 export function resetKeyboardOffset(): void {
-  KeyboardDismiss?.resetOffset();
+  getKeyboardDismiss()?.resetOffset();
 }

@@ -108,10 +108,11 @@ export function ActionButton({
   // For rotate-settle: hold the SF rotate effect briefly after loading ends
   // so rapid re-presses keep the icon spinning seamlessly.
   const [sfRotateHold, setSfRotateHold] = React.useState(false);
+  if (loadingIconMotion === 'rotate-settle' && loading && !sfRotateHold) {
+    setSfRotateHold(true);
+  }
   React.useEffect(() => {
-    if (loadingIconMotion !== 'rotate-settle') return;
-    if (loading) {
-      setSfRotateHold(true);
+    if (loadingIconMotion !== 'rotate-settle' || loading) {
       return;
     }
     const timer = setTimeout(() => setSfRotateHold(false), 800);
@@ -182,7 +183,7 @@ export function ActionButton({
               entering={FadeIn.duration(180).withInitialValues({
                 opacity: 0,
                 transform: [{ scale: 0.94 }, { translateY: 2 }],
-              })}
+              } as { opacity: number })}
               key={usesSfReplaceTransition ? 'sf-symbol-image' : iconStateKey}>
               {usesSfReplaceTransition ? (
                 <Image
@@ -219,7 +220,7 @@ export function ActionButton({
             entering={FadeIn.duration(160).withInitialValues({
               opacity: 0,
               transform: [{ scale: 0.98 }, { translateY: 3 }],
-            })}
+            } as { opacity: number })}
             exiting={FadeOut.duration(120)}
             key={textStateKey}
             className={cn('items-center', hasHint && 'gap-0.5')}>
