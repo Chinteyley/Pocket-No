@@ -1,0 +1,19 @@
+{
+  "bundleId": "dev.ctey.pocketno",
+  "simulator": "iPhone 17",
+  "udid": "25B395EC-01B8-4FB6-8D2A-1C484C360481",
+  "appPath": "/Users/runner/work/Pocket-No/Pocket-No/.cache/pocket-no-deriveddata/base/Build/Products/Release-iphonesimulator/PocketNo.app",
+  "screens": [
+    "home",
+    "home-copied",
+    "home-new",
+    "browse",
+    "browse-work",
+    "favorites",
+    "settings",
+    "support",
+    "privacy",
+    "personalize-fallback",
+    "copy-sheet"
+  ]
+}
