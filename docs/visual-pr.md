@@ -110,6 +110,6 @@ If the media push is denied, the job still uploads Actions artifacts. The commen
 - Settings
 - Support and Privacy
 - Personalize fallback (`Not available on this device.`)
-- Copy sheet via `pocketno:///copy?entry=app`
+- Copy sheet (last-resort `pocketno:///copy?entry=app` only)
 
-Deep links are preferred over tapping `NativeTabs`, which Maestro often cannot see as ordinary buttons.
+The flow taps tab labels / ids, then the tab-bar at **94%** height on iPhone 17 (icons live at 92–96%; 91% hits Copy/New). Custom-scheme `openLink` is last resort and only when the destination marker is still missing. After that, tap the system **Open** button at **68%, 54%** (measured from the 1206×2622 screenshots). `capture.sh` launches by bundle id; Maestro does not relaunch.

@@ -39,6 +39,8 @@ cleanup_recording() {
 }
 trap cleanup_recording EXIT
 
+# Launch by bundle id, not the pocketno:// scheme. Maestro must attach to
+# this process (stopApp/clearState false) so iOS does not show Open-in-app.
 xcrun simctl launch booted "$BUNDLE_ID"
 wait_for_app_idle 4
 
