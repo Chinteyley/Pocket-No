@@ -70,5 +70,10 @@
   "trustedDependencies": [
     "@shopify/react-native-skia",
     "unrs-resolver"
-  ]
+  ],
+  "overrides": {
+    "@babel/helper-compilation-targets": {
+      "lru-cache": "5.1.1"
+    }
+  }
 }
