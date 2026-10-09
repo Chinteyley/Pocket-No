@@ -4,7 +4,7 @@ import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
-} from '@react-navigation/native';
+} from "expo-router/react-navigation";
 import { Image } from 'expo-image';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { Platform, useColorScheme } from 'react-native';

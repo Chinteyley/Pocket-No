@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.homepage         = 'https://github.com/expo/expo'
   s.license          = { type: 'MIT' }
   s.author           = { 'Pocket-No' => 'dev@ctey.dev' }
-  s.platforms        = { :ios => '15.1' }
+  s.platforms        = { :ios => '16.4' }
   s.source           = { git: '' }
   s.static_framework = true
   s.swift_version    = '5.9'

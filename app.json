@@ -51,6 +51,15 @@
           "enableBackgroundPlayback": false
         }
       ],
+      "expo-status-bar",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "enableSceneSupport": true
+          }
+        }
+      ],
       "@bacons/apple-targets",
       "./plugins/with-screenless-quick-copy"
     ],
