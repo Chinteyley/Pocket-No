@@ -44,6 +44,11 @@ SIM_NAME="$(sanitize_simulator_name "$SIMULATOR_NAME")"
 SIM_UDID="$(ensure_simulator "$SIM_NAME")"
 DESTINATION="platform=iOS Simulator,id=${SIM_UDID}"
 
+LOG_PATH="${OUT_DIR:-$APP_ROOT}/xcodebuild-visual-pr.log"
+if [ -n "$OUT_DIR" ]; then
+  mkdir -p "$OUT_DIR"
+fi
+
 log "Building $SCHEME for simulator $SIM_NAME ($SIM_UDID)"
 set -o pipefail
 xcodebuild \
@@ -61,7 +66,7 @@ xcodebuild \
   CODE_SIGNING_REQUIRED=NO \
   COMPILER_INDEX_STORE_ENABLE=NO \
   EXPO_NO_CAPABILITY_SYNC=1 \
-  build | tee "$APP_ROOT/xcodebuild-visual-pr.log"
+  build | tee "$LOG_PATH"
 
 APP_PATH="$(find_built_app "$DERIVED_DATA_DIR")"
 [ -n "$APP_PATH" ] || die "Built .app not found under $DERIVED_DATA_DIR"

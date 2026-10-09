@@ -8,7 +8,7 @@ This is the cloud equivalent of opening the PR on a Mac and tapping through the 
 
 Workflow file: [`.github/workflows/visual-pr.yml`](../.github/workflows/visual-pr.yml)
 
-1. Runs on `macos-15` (Xcode included) for `pull_request` and `workflow_dispatch`.
+1. Runs on `macos-26` with Xcode 26+ for `pull_request` and `workflow_dispatch`. Xcode 16 cannot compile `@react-native-ai/apple` (`SpeechTranscriber` is an iOS 26 SDK type).
 2. Checks out the workflow scripts from the merge commit, then builds from two git worktrees: `base.sha` and `head.sha`.
 3. Installs JS deps with Bun, runs `expo prebuild --platform ios`, `pod install`, and `xcodebuild` for a **Release** iOS Simulator destination with signing disabled.
 4. Boots an iPhone simulator, forces light appearance, a fixed 9:41 status bar, and Reduce Motion (so the existing ambient-background code path stays still).
@@ -79,7 +79,7 @@ Useful env vars:
 
 | Variable | Purpose |
 | --- | --- |
-| `SIMULATOR_NAME` | Defaults to `iPhone 16`; falls back to the last available iPhone. |
+| `SIMULATOR_NAME` | Defaults to `iPhone 17`; falls back to the last available iPhone. |
 | `DERIVED_DATA_DIR` | Defaults to `~/.cache/pocket-no-deriveddata`. |
 | `VISUAL_REVIEW_PORT` | Fixture server port, default `8787`. |
 | `EXPO_PUBLIC_VISUAL_REVIEW` | Must be `1` to pin Home copy. |

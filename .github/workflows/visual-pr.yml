@@ -26,7 +26,7 @@ permissions:
 jobs:
   ios-visual-review:
     name: iOS simulator before / after
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 90
     env:
       EXPO_NO_TELEMETRY: "1"
@@ -35,7 +35,7 @@ jobs:
       VISUAL_REVIEW_PORT: "8787"
       DERIVED_DATA_DIR: ${{ github.workspace }}/.cache/pocket-no-deriveddata
       BUNDLE_ID: dev.ctey.pocketno
-      SIMULATOR_NAME: iPhone 16
+      SIMULATOR_NAME: iPhone 17
 
     steps:
       - name: Checkout workflow tools
@@ -79,8 +79,18 @@ jobs:
           echo "pr_number=$NUMBER" >> "$GITHUB_OUTPUT"
           echo "Started visual review for base $BASE_SHA vs head $HEAD_SHA"
 
-      - name: Show runner Xcode
+      - name: Select Xcode 26+
         run: |
+          set -euo pipefail
+          ls -1d /Applications/Xcode*.app 2>/dev/null || true
+          XCODE_APP="$(ls -1d /Applications/Xcode_2[6-9]*.app /Applications/Xcode_2[6-9].*.app 2>/dev/null | sort -V | tail -n 1 || true)"
+          if [ -z "${XCODE_APP:-}" ] && [ -d /Applications/Xcode.app ]; then
+            XCODE_APP="/Applications/Xcode.app"
+          fi
+          if [ -n "${XCODE_APP:-}" ]; then
+            sudo xcode-select -s "$XCODE_APP"
+          fi
+          echo "Using $(xcode-select -p)"
           xcodebuild -version
           xcrun simctl list devices available || true
 
@@ -120,8 +130,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.DERIVED_DATA_DIR }}
-          key: deriveddata-${{ runner.os }}-${{ hashFiles('bun.lock') }}-v1
-          restore-keys: deriveddata-${{ runner.os }}-
+          key: deriveddata-${{ runner.os }}-${{ hashFiles('bun.lock') }}-xcode26-v1
+          restore-keys: deriveddata-${{ runner.os }}-xcode26-
 
       - name: Install Maestro
         run: |

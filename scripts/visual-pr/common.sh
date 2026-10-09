@@ -2,7 +2,7 @@
 # shellcheck shell=bash
 
 BUNDLE_ID="${BUNDLE_ID:-dev.ctey.pocketno}"
-SIMULATOR_NAME="${SIMULATOR_NAME:-iPhone 16}"
+SIMULATOR_NAME="${SIMULATOR_NAME:-iPhone 17}"
 SCHEME_HINT="${SCHEME_HINT:-PocketNo}"
 VISUAL_REVIEW_PORT="${VISUAL_REVIEW_PORT:-8787}"
 DERIVED_DATA_DIR="${DERIVED_DATA_DIR:-$HOME/.cache/pocket-no-deriveddata}"

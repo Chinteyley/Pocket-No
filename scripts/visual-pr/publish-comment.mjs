@@ -189,7 +189,9 @@ function pushMedia({ repo, branch, sourceRoot, prNumber, runId }) {
       }
     }
 
-    run("git", ["add", "pr"], { cwd: tmp });
+    if (exists(path.join(tmp, "pr"))) {
+      run("git", ["add", "pr"], { cwd: tmp });
+    }
     const status = run("git", ["status", "--porcelain"], { cwd: tmp });
     if (status) {
       run("git", ["commit", "-m", `Visual review media for PR #${prNumber} run ${runId}`], {
