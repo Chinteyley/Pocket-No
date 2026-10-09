@@ -904,7 +904,7 @@ export default function PocketNoHomeScreen() {
             />
             <ActionButton
               fill
-              label="New"
+              label="Another"
               icon="arrow.clockwise"
               onPress={() => void handleAnotherOne()}
               loading={busyAction === "another"}
