@@ -44,3 +44,8 @@ app-example
 
 # git worktrees
 .worktrees/
+
+# visual PR captures
+artifacts/
+xcodebuild-visual-pr.log
+.cache/
